@@ -32,8 +32,9 @@
         .map-title { font-size: 1.2rem; font-weight: bold; color: #ffaa00; }
         .map-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
 
-        .map-viewer { position: relative; width: 100%; height: 200px; background: #000; overflow: hidden; }
-        .map-image { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+        .map-viewer { position: relative; width: 100%; height: 160px; background: #161619; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .map-viewer-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .map-viewer-text { font-size: 0.9rem; color: var(--text-muted); }
 
         .section-title { font-size: 1.1rem; color: #ffaa00; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -44,7 +45,7 @@
         .item-card.rare { border-left: 5px solid var(--rare); }
         .item-card.unique { border-left: 5px solid var(--unique); background: linear-gradient(90deg, rgba(255,170,0,0.08) 0%, var(--card-bg) 100%); }
 
-        .item-icon { width: 48px; height: 48px; background: #151515; border-radius: 6px; border: 1px solid var(--border-color); padding: 4px; flex-shrink: 0; object-fit: contain; }
+        .item-icon-box { width: 48px; height: 48px; background: #151515; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
 
         .item-details-box { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
 
@@ -88,7 +89,8 @@
         <div id="mapMeta" class="map-meta">Schwierigkeit: Stufe 1+</div>
     </div>
     <div class="map-viewer">
-        <img id="mapImg" class="map-image" src="" alt="Kartengrafik">
+        <div class="map-viewer-icon">🗺️</div>
+        <div id="mapDesc" class="map-viewer-text">Dichte Wälder voller Creepers. Der perfekte Ort, um erste Ausrüstung zu farmen.</div>
     </div>
 </div>
 
@@ -101,54 +103,60 @@ const dungeonsDB = {
         name: "Creeper-Ebenen",
         english: "Creeper Woods",
         level: "Empfohlen: Stufe 1+",
-        image: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/a/ab/Creeper_Woods_banner.png",
+        desc: "Dichte Wälder voller Creepers. Der perfekte Ort, um erste Ausrüstung und Artefakte zu farmen.",
         drops: [
-            { name: "Schwert", type: "Nahkampf", rarity: "common", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/44/Iron_Sword_JE2_BE2.png", effect: "Standard-Nahkampfwaffe mit schnellen Hieben." },
-            { name: "Axt", type: "Nahkampf", rarity: "common", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/d/d2/Iron_Axe_JE2_BE2.png", effect: "Führt einen Rundumschlag aus." },
-            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/2/22/Bow_JE2_BE1.png", effect: "Erhöhter kritischer Trefferschaden." },
-            { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/c/c7/Leather_Tunic_JE4_BE2.png", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
-            { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/6a/Golden_Sword_JE3_BE2.png", effect: "Fügt zusätzlich Giftschaden über Zeit zu." }
+            { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", effect: "Standard-Nahkampfwaffe mit schnellen Hieben." },
+            { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", effect: "Führt einen wuchtigen Rundumschlag aus." },
+            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", effect: "Erhöhter kritischer Trefferschaden." },
+            { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
+            { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
+            { name: "Raketen-Pfeil", type: "Artefakt", rarity: "common", symbol: "🚀", effect: "Verwandelt den nächsten Pfeil in eine Explosion." }
         ]
     },
     soggy_swamp: {
         name: "Sumpf",
         english: "Soggy Swamp",
         level: "Empfohlen: Stufe 5+",
-        image: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/8c/Soggy_Swamp_banner.png",
+        desc: "Gefährliche Sumpflandschaft. Heimat der Hexen und des Kessel-Golems.",
         drops: [
-            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/85/Iron_Hoe_JE2_BE2.png", effect: "Hohe Angriffsgeschwindigkeit." },
-            { name: "Giftschwert", type: "Nahkampf", rarity: "unique", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/6a/Golden_Sword_JE3_BE2.png", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
-            { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/a/a2/Crossbow_JE2_BE2.png", effect: "Verschießt 5 Bolzen gleichzeitig." }
+            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", symbol: "🗡️", effect: "Hohe Angriffsgeschwindigkeit." },
+            { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
+            { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Verschießt 5 Bolzen gleichzeitig." },
+            { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", effect: "Hüllt den Spieler in eine giftige Wolke." }
         ]
     },
     pumpkin_pastures: {
         name: "Kürbisfelder",
         english: "Pumpkin Pastures",
         level: "Empfohlen: Stufe 10+",
-        image: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/2/2f/Pumpkin_Pastures_banner.png",
+        desc: "Offene Felder mit Dorfruinen und vielen gepanzerten Gegnerscharen.",
         drops: [
-            { name: "Sichel", type: "Nahkampf", rarity: "common", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/85/Iron_Hoe_JE2_BE2.png", effect: "Schnelle Angriffe mit hoher Frequenz." },
-            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/2/2c/Iron_Chestplate_JE2_BE2.png", effect: "-20% erlittener Schaden für das Team." }
+            { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", effect: "Schnelle Angriffe mit hoher Frequenz." },
+            { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", effect: "Stiehlt Leben von besiegten Gegnern." },
+            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "-20% erlittener Schaden für das Team." },
+            { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", effect: "Wirft nahe Gegner wirkungsvoll zurück." }
         ]
     },
     cacti_canyon: {
         name: "Kakteen-Canyon",
         english: "Cacti Canyon",
         level: "Empfohlen: Stufe 15+",
-        image: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/86/Cacti_Canyon_banner.png",
+        desc: "Trockener Canyon mit Schützen und tückischen Fallen.",
         drops: [
-            { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/44/Iron_Sword_JE2_BE2.png", effect: "Fügt Blutungsschaden zu." },
-            { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/2/22/Bow_JE2_BE1.png", effect: "Hoher Einzelschuss-Schaden." }
+            { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", symbol: "⚔️", effect: "Fügt gegnerischen Zielen Blutungsschaden zu." },
+            { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Enorm hoher Einzelschuss-Schaden." },
+            { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+35% allgemeiner Waffenschaden." }
         ]
     },
     redstone_mines: {
         name: "Redstone-Minen",
-        english: "Redstone Mines",
+        english: "Redstone-Minen",
         level: "Empfohlen: Stufe 20+",
-        image: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/9/90/Redstone_Mines_banner.png",
+        desc: "Dunkle Minen voll mit Redstone-Monstern und explosiven Fallen.",
         drops: [
-            { name: "Spitzhacke", type: "Nahkampf", rarity: "common", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/d/d4/Iron_Pickaxe_JE3_BE2.png", effect: "Hoher Schaden pro Schlag." },
-            { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", icon: "https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/6a/Golden_Sword_JE3_BE2.png", effect: "Erzeugt kleine Redstone-Explosionen." }
+            { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", effect: "Extrem hoher Schaden pro Einzelschlag." },
+            { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern." },
+            { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "rare", symbol: "🎆", effect: "Verursacht heftigen Flächenschaden im Zielgebiet." }
         ]
     }
 };
@@ -160,7 +168,7 @@ function updateView() {
 
     document.getElementById('mapTitle').innerText = `${region.name} (${region.english})`;
     document.getElementById('mapMeta').innerText = region.level;
-    document.getElementById('mapImg').src = region.image;
+    document.getElementById('mapDesc').innerText = region.desc;
 
     const dropContainer = document.getElementById('dropList');
     dropContainer.innerHTML = '';
@@ -180,7 +188,7 @@ function updateView() {
         let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
 
         card.innerHTML = `
-            <img class="item-icon" src="${item.icon}" alt="${item.name}">
+            <div class="item-icon-box">${item.symbol}</div>
             <div class="item-details-box">
                 <div class="item-row">
                     <span class="item-name ${item.rarity}">${item.name}</span>
