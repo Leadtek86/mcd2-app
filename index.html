@@ -195,7 +195,6 @@ const regions = {
     lower_temple: { name: "Lower Temple" }
 };
 
-// DIE ABSOLUT VOLLSTÄNDIGE LOKALE ITEM-DATENBANK DES GESAMTEN SPIELS (ÜBER 250+ ITEMS)
 const itemsDB = [
     // --- BRAVE HAVEN ---
     { name: "Söldner-Großschwert", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "brave_haven", x: 10, y: 38, effect: "Schwere Hiebe mit hoher Reichweite.", bestEnemy: "Hafen-Kapitän Mini-Boss", dropRate: "22%" },
@@ -396,7 +395,7 @@ function updateView() {
             <div class="item-icon-box">${item.symbol}</div>
             <div class="item-details-box">
                 <div class="item-row">
-                    <span class="item-name ${item.raritem}">${item.name}</span>
+                    <span class="item-name ${item.rarity}">${item.name}</span>
                     <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
                 </div>
                 <div class="item-info"><strong>Typ:</strong> ${item.type} | <strong>Region:</strong> ${regionName}</div>
