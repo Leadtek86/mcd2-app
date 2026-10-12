@@ -18,7 +18,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; scroll-behavior: smooth; }
 
         header { text-align: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
         h1 { color: #f0883e; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; }
@@ -26,8 +26,9 @@
 
         .section-title { font-size: 1rem; color: #f0883e; margin: 15px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Weltkarte Container */
-        .map-container { width: 100%; height: 320px; background: #000; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; position: relative; }
+        /* Weltkarte Container mit Zoom-Funktion */
+        .map-container { width: 100%; height: 320px; background: #000; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .map-wrapper { width: 100%; height: 100%; transition: transform 0.4s ease; transform-origin: center center; position: relative; }
         .map-image { width: 100%; height: 100%; object-fit: contain; display: block; }
 
         /* Suchleiste & Drop-Datenbank */
@@ -41,7 +42,7 @@
         .item-card.unique { border-left: 4px solid var(--unique); background: linear-gradient(90deg, rgba(255,170,0,0.06) 0%, var(--card-bg) 100%); }
 
         .item-icon-box { width: 40px; height: 40px; background: #0d1117; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
-        .item-details-box { flex-grow: 1; display: flex; flex-direction: column; gap: 2px; }
+        .item-details-box { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
         .item-row { display: flex; justify-content: space-between; align-items: center; }
         .item-name { font-weight: bold; font-size: 0.95rem; }
         .item-name.common { color: var(--common); }
@@ -55,6 +56,9 @@
 
         .item-info { font-size: 0.75rem; color: var(--text-muted); }
         .item-effect { font-size: 0.8rem; color: #ddd; }
+
+        .map-btn { background: #21262d; border: 1px solid var(--border-color); color: var(--accent-gold); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; margin-top: 4px; align-self: flex-start; }
+        .map-btn:hover { background: #30363d; }
     </style>
 </head>
 <body>
@@ -65,19 +69,21 @@
 </header>
 
 <div class="section-title">Interaktive Weltkarte</div>
-<div class="map-container">
-    <!-- Hier wird nun exakt deine map.jpg geladen -->
-    <img src="map.jpg" alt="Minecraft Dungeons Weltkarte" class="map-image">
+<div class="map-container" id="mapContainer">
+    <div class="map-wrapper" id="mapWrapper">
+        <img src="map.jpg" alt="Minecraft Dungeons Weltkarte" class="map-image">
+    </div>
 </div>
 
 <div class="section-title">Loot-Datenbank (<span id="itemCount">0</span> Items)</div>
 <div class="controls">
-    <select id="regionSelect" onchange="updateView()">
-        <option value="creeper_woods">Creeper-Ebenen (Creeper Woods)</option>
-        <option value="soggy_swamp">Sumpf (Soggy Swamp)</option>
-        <option value="pumpkin_pastures">Kürbisfelder (Pumpkin Pastures)</option>
-        <option value="cacti_canyon">Kakteen-Canyon (Cacti Canyon)</option>
-        <option value="redstone_mines">Redstone-Minen (Redstone Mines)</option>
+    <select id="regionSelect" onchange="filterByDropdown()">
+        <option value="all">Alle Regionen anzeigen</option>
+        <option value="honeycomb_fields">Honeycomb Fields</option>
+        <option value="howling_woods">Howling Woods</option>
+        <option value="frozen_fjords">Frozen Fjords</option>
+        <option value="rainy_plains">Rainy Plains</option>
+        <option value="soggy_swamp">Soggy Swamp</option>
     </select>
     <input type="text" id="searchInput" placeholder="Gegenstand oder Effekt suchen..." oninput="updateView()">
 </div>
@@ -86,65 +92,106 @@
 
 <script>
 const dungeonsDB = {
-    creeper_woods: {
+    honeycomb_fields: {
+        name: "Honeycomb Fields",
+        x: "30%", y: "40%", scale: 1.8,
         drops: [
-            { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", effect: "Standard-Nahkampfwaffe mit schnellen Hieben." },
             { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", effect: "Führt einen wuchtigen Rundumschlag aus." },
+            { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." }
+        ]
+    },
+    howling_woods: {
+        name: "Howling Woods",
+        x: "50%", y: "40%", scale: 1.8,
+        drops: [
             { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", effect: "Erhöhter kritischer Trefferschaden." },
-            { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
-            { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
-            { name: "Raketen-Pfeil", type: "Artefakt", rarity: "common", symbol: "🚀", effect: "Verwandelt den nächsten Pfeil in eine Explosion." }
+            { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", effect: "Fügt zusätzlich Giftschaden über Zeit zu." }
+        ]
+    },
+    frozen_fjords: {
+        name: "Frozen Fjords",
+        x: "80%", y: "30%", scale: 1.8,
+        drops: [
+            { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", effect: "Extrem hoher Schaden pro Einzelschlag." },
+            { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Enorm hoher Einzelschuss-Schaden." }
+        ]
+    },
+    rainy_plains: {
+        name: "Rainy Plains",
+        x: "50%", y: "75%", scale: 1.8,
+        drops: [
+            { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", effect: "Schnelle Angriffe mit hoher Frequenz." },
+            { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", effect: "Stiehlt Leben von besiegten Gegnern." }
         ]
     },
     soggy_swamp: {
+        name: "Soggy Swamp",
+        x: "30%", y: "70%", scale: 1.8,
         drops: [
-            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", symbol: "🗡️", effect: "Hohe Angriffsgeschwindigkeit." },
             { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
-            { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Verschießt 5 Bolzen gleichzeitig." },
-            { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", effect: "Hüllt den Spieler in eine giftige Wolke." }
-        ]
-    },
-    pumpkin_pastures: {
-        drops: [
-            { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", effect: "Schnelle Angriffe mit hoher Frequenz." },
-            { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", effect: "Stiehlt Leben von besiegten Gegnern." },
-            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "-20% erlittener Schaden für das Team." },
-            { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", effect: "Wirft nahe Gegner wirkungsvoll zurück." }
-        ]
-    },
-    cacti_canyon: {
-        drops: [
-            { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", symbol: "⚔️", effect: "Fügt gegnerischen Zielen Blutungsschaden zu." },
-            { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Enorm hoher Einzelschuss-Schaden." },
-            { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+35% allgemeiner Waffenschaden." }
-        ]
-    },
-    redstone_mines: {
-        drops: [
-            { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", effect: "Extrem hoher Schaden pro Einzelschlag." },
-            { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern." },
-            { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "rare", symbol: "🎆", effect: "Verursacht heftigen Flächenschaden im Zielgebiet." }
+            { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Verschießt 5 Bolzen gleichzeitig." }
         ]
     }
 };
 
+function focusRegion(regionKey) {
+    const wrapper = document.getElementById('mapWrapper');
+    const region = dungeonsDB[regionKey];
+    
+    if (region) {
+        // Zoom und Fokus auf die Koordinaten der Region auf der Karte
+        wrapper.style.transform = `scale(${region.scale}) translate(calc(50% - ${region.x}), calc(50% - ${region.y}))`;
+    } else {
+        // Reset Ansicht
+        wrapper.style.transform = 'scale(1) translate(0px, 0px)';
+    }
+
+    // Nach oben zur Karte scrollen
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterByDropdown() {
+    const selectedKey = document.getElementById('regionSelect').value;
+    if (selectedKey !== 'all') {
+        focusRegion(selectedKey);
+    } else {
+        focusRegion(null);
+    }
+    updateView();
+}
+
 function updateView() {
     const selectedKey = document.getElementById('regionSelect').value;
     const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-    const regionData = dungeonsDB[selectedKey];
-
     const dropContainer = document.getElementById('dropList');
     dropContainer.innerHTML = '';
 
-    const filteredDrops = regionData.drops.filter(item => 
+    let itemsToShow = [];
+
+    if (selectedKey === 'all') {
+        for (let key in dungeonsDB) {
+            dungeonsDB[key].drops.forEach(item => {
+                itemsToShow.push({ ...item, regionKey: key, regionName: dungeonsDB[key].name });
+            });
+        }
+    } else {
+        if (dungeonsDB[selectedKey]) {
+            dungeonsDB[selectedKey].drops.forEach(item => {
+                itemsToShow.push({ ...item, regionKey: selectedKey, regionName: dungeonsDB[selectedKey].name });
+            });
+        }
+    }
+
+    const filtered = itemsToShow.filter(item => 
         item.name.toLowerCase().includes(searchFilter) || 
         item.type.toLowerCase().includes(searchFilter) ||
-        item.effect.toLowerCase().includes(searchFilter)
+        item.effect.toLowerCase().includes(searchFilter) ||
+        item.regionName.toLowerCase().includes(searchFilter)
     );
 
-    document.getElementById('itemCount').innerText = filteredDrops.length;
+    document.getElementById('itemCount').innerText = filtered.length;
 
-    filteredDrops.forEach(item => {
+    filtered.forEach(item => {
         const card = document.createElement('div');
         card.className = `item-card ${item.rarity}`;
         let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
@@ -156,8 +203,9 @@ function updateView() {
                     <span class="item-name ${item.rarity}">${item.name}</span>
                     <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
                 </div>
-                <div class="item-info"><strong>Kategorie:</strong> ${item.type}</div>
+                <div class="item-info"><strong>Region:</strong> ${item.regionName} | <strong>Typ:</strong> ${item.type}</div>
                 <div class="item-effect">${item.effect}</div>
+                <button class="map-btn" onclick="document.getElementById('regionSelect').value='${item.regionKey}'; filterByDropdown();">📍 Auf Karte zeigen</button>
             </div>
         `;
         dropContainer.appendChild(card);
