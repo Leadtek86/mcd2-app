@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Dungeons 2 - Vollständige Drop-Datenbank</title>
+    <title>Minecraft Dungeons 2 - Interaktive Map & Drops</title>
     <style>
         :root {
             --bg-dark: #0f1117;
@@ -24,10 +24,14 @@
         select, input { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-size: 1rem; }
         
         .map-card { background: var(--card-bg); border: 1px solid var(--accent); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-        .map-image { width: 100%; height: 180px; object-fit: cover; display: block; border-bottom: 1px solid var(--border); }
+        .canvas-container { position: relative; width: 100%; height: 220px; background: #0b0d12; }
+        canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+        .map-instruction { font-size: 0.75rem; color: var(--accent-gold); text-align: center; padding: 4px; background: rgba(0,0,0,0.4); }
         .map-details { padding: 15px; }
         .map-title { font-size: 1.2rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 5px; }
         
+        .poi-info { background: #11141d; border: 1px dashed var(--accent-gold); border-radius: 6px; padding: 10px; margin-top: 10px; font-size: 0.85rem; display: none; }
+
         .drop-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .item-card { background: #13151c; border-left: 4px solid var(--border); border-radius: 6px; padding: 12px; }
         .item-card.unique { border-left-color: var(--accent-gold); background: linear-gradient(90deg, rgba(255,179,0,0.05) 0%, #13151c 100%); }
@@ -49,7 +53,7 @@
 
 <header>
     <h1>Minecraft Dungeons 2</h1>
-    <p class="subtitle">Karten-Guide & Complete Drop-Datenbank</p>
+    <p class="subtitle">Interaktive Karte & Drop-Datenbank</p>
 </header>
 
 <div class="controls">
@@ -63,14 +67,20 @@
     <input type="text" id="searchInput" placeholder="Gegenstand, Typ oder Effekt suchen..." oninput="updateView()">
 </div>
 
-<div class="map-card" id="mapInfo">
-    <!-- Dynamisch -->
+<div class="map-card">
+    <div class="canvas-container">
+        <canvas id="interactiveMap"></canvas>
+    </div>
+    <div class="map-instruction">📍 Tippe auf die farbigen Punkte auf der Karte für Fundorte & Geheimnisse!</div>
+    <div class="map-details">
+        <div id="mapTitle" class="map-title"></div>
+        <p id="mapDesc" style="font-size: 0.9rem; color: var(--text-muted);"></p>
+        <div id="poiBox" class="poi-info"></div>
+    </div>
 </div>
 
 <h2>Mögliche Beute (<span id="itemCount">0</span> Drops)</h2>
-<div style="margin-top: 10px;" class="drop-grid" id="dropList">
-    <!-- Drops -->
-</div>
+<div style="margin-top: 10px;" class="drop-grid" id="dropList"></div>
 
 <script>
 const mapData = {
@@ -78,7 +88,13 @@ const mapData = {
         name: "Regen-Ebenen",
         difficulty: "Stufe 1 - 5",
         description: "Regnerisches Startgebiet mit vielen Sumpf-Gegnern, Schlammlöchern und versteckten Höhlen.",
-        image: "https://images.unsplash.com/photo-1511497584788-876761c11932?w=600&auto=format&fit=crop",
+        bgColor: "#1a2e22",
+        gridColor: "#274734",
+        pois: [
+            { x: 0.25, y: 0.4, label: "Gold-Kiste", type: "Chest", desc: "Enthält garantiert 1x Seltenes Item." },
+            { x: 0.7, y: 0.3, label: "Sumpf-Hexe (Mini-Boss)", type: "Boss", desc: "Drops: Sumpf-Dolche & Gift-Amulett." },
+            { x: 0.5, y: 0.75, label: "Geheim-Höhle", type: "Secret", desc: "Eingang hinter den Lianen versteckt." }
+        ],
         drops: [
             { name: "Sumpf-Schwert", type: "Nahkampf", rarity: "common", rate: "35%", effect: "Vergiftet Gegner bei Treffer." },
             { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Hohe Angriffsgeschwindigkeit und Giftschaden." },
@@ -86,69 +102,134 @@ const mapData = {
             { name: "Sumpf-Rüstung", type: "Rüstung", rarity: "common", rate: "25%", effect: "+15% Giftresistent & +10% Nahkampfschaden." },
             { name: "Schlamm-Stiefel", type: "Rüstung", rarity: "rare", rate: "10%", effect: "Immunität gegen Verlangsamung im Schlamm." },
             { name: "Gift-Amulett", type: "Artefakt", rarity: "unique", rate: "3%", effect: "Erzeugt eine große, lang anhaltende Giftwolke." },
-            { name: "Sumpf-Klinge der Schande", type: "Nahkampf", rarity: "unique", rate: "1.5%", effect: "Fügt allen vergifteten Gegnern doppelten Schaden zu." },
-            { name: "Lianen-Peitsche", type: "Nahkampf", rarity: "rare", rate: "8%", effect: "Zieht entfernte Gegner zu dir heran." }
+            { name: "Sumpf-Klinge der Schande", type: "Nahkampf", rarity: "unique", rate: "1.5%", effect: "Fügt allen vergifteten Gegnern doppelten Schaden zu." }
         ]
     },
     meadow: {
         name: "Sänger-Wiese",
         difficulty: "Stufe 4 - 10",
         description: "Offene Wiesen mit starken Magiern, verzauberten Kühen und alten Sing-Ruinen.",
-        image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop",
+        bgColor: "#29381e",
+        gridColor: "#3e542d",
+        pois: [
+            { x: 0.3, y: 0.5, label: "Schall-Altare", type: "Secret", desc: "Aktiviere alle 3 Steine für ein Portal." },
+            { x: 0.8, y: 0.6, label: "Barden-König", type: "Boss", desc: "Drops: Wiegenlied-Klinge & Wind-Horn." }
+        ],
         drops: [
             { name: "Wind-Horn", type: "Artefakt", rarity: "common", rate: "40%", effect: "Stößt nahe Gegner zurück und verlangsamt sie." },
             { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", rate: "18%", effect: "+20% Schaden für die gesamte Gruppe." },
-            { name: "Echo-Klinge", type: "Nahkampf", rarity: "rare", rate: "14%", effect: "Jeder 3. Schlag löst eine Schallwelle aus." },
             { name: "Wiegenlied-Klinge", type: "Nahkampf", rarity: "unique", rate: "2.5%", effect: "Schläfert kleine Gegnergruppen für 3 Sek. ein." },
             { name: "Barde-Armbrust", type: "Fernkampf", rarity: "common", rate: "30%", effect: "Verschießt schallverstärkte Bolzen." },
-            { name: "Harpunen-Bogen", type: "Fernkampf", rarity: "unique", rate: "2.0%", effect: "Durchbohrt mehrere Ziele und wirft sie zurück." },
-            { name: "Melodie-Amulett", type: "Artefakt", rarity: "unique", rate: "3.5%", effect: "Erhöht die Laufgeschwindigkeit des Teams um 30%." }
+            { name: "Harpunen-Bogen", type: "Fernkampf", rarity: "unique", rate: "2.0%", effect: "Durchbohrt mehrere Ziele und wirft sie zurück." }
         ]
     },
     frozen: {
         name: "Gefrorenes Hochland",
         difficulty: "Stufe 8 - 15",
         description: "Eisige Bergpässe mit Rutschgefahr, Schneestürmen und Eis-Wandlern.",
-        image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop",
+        bgColor: "#1e2c38",
+        gridColor: "#2c4154",
+        pois: [
+            { x: 0.4, y: 0.3, label: "Eis-Golem", type: "Boss", desc: "Drops: Frost-Bogen & Schneeball-Artefakt." },
+            { x: 0.6, y: 0.7, label: "Eingefrorene Truhe", type: "Chest", desc: "Nutze Feuer-Schaden zum Freischmelzen." }
+        ],
         drops: [
             { name: "Eis-Spitzhacke", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Verlangsamt gegnerisches Bewegungstempo." },
             { name: "Schneeball-Artefakt", type: "Artefakt", rarity: "common", rate: "30%", effect: "Schießt automatische Eiskugeln auf nahe Feinde." },
             { name: "Frost-Gewand", type: "Rüstung", rarity: "rare", rate: "15%", effect: "Gegner, die dich angreifen, frieren kurz ein." },
-            { name: "Frost-Bogen", type: "Fernkampf", rarity: "unique", rate: "1.8%", effect: "Friert Ziele bei Volltreffer für 2 Sekunden ein." },
-            { name: "Eiszapfen-Speer", type: "Nahkampf", rarity: "rare", rate: "10%", effect: "Hohe Reichweite mit zusätzlichem Frostschaden." },
-            { name: "Gletscher-Spender", type: "Artefakt", rarity: "unique", rate: "2.2%", effect: "Beschwört eine stationäre Eis-Zapfen-Kanone." },
-            { name: "Kaltes Herz", type: "Rüstung", rarity: "unique", rate: "1.2%", effect: "Wandelt 10% des erlittenen Schadens in Eis-Aura um." }
+            { name: "Frost-Bogen", type: "Fernkampf", rarity: "unique", rate: "1.8%", effect: "Friert Ziele bei Volltreffer für 2 Sekunden ein." }
         ]
     },
     huskland: {
         name: "Bescheidenes Ödland",
         difficulty: "Stufe 12 - 20",
         description: "Gefährliche Wüste voll mit Husk-Zombies, Sandstürmen und Treibsand-Fallen.",
-        image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop",
+        bgColor: "#382d1e",
+        gridColor: "#54432c",
+        pois: [
+            { x: 0.5, y: 0.4, label: "Pyramiden-Grab", type: "Secret", desc: "Führt zum Pharaonen-Encounter." },
+            { x: 0.8, y: 0.2, label: "Riesen-Skarabäus", type: "Boss", desc: "Drops: Wüsten-Sichel & Käfer-Kokon." }
+        ],
         drops: [
             { name: "Wüsten-Küstensäbel", type: "Nahkampf", rarity: "common", rate: "28%", effect: "Schnelle Schläge mit Blutungseffekt." },
             { name: "Wüsten-Sichel", type: "Nahkampf", rarity: "unique", rate: "2.0%", effect: "Raubt Leben bei jedem kritischen Treffer." },
             { name: "Sandsturm-Amulett", type: "Artefakt", rarity: "rare", rate: "10%", effect: "Blendet alle Nahkampf-Angreifer im Umkreis." },
-            { name: "Pharaonen-Rüstung", type: "Rüstung", rarity: "unique", rate: "1.5%", effect: "Erhöht Seelen-Ausbeute und beschwört Mummy-Helfer." },
-            { name: "Sonnen-Bogen", type: "Fernkampf", rarity: "rare", rate: "14%", effect: "Setzt Ziele in Brand." },
-            { name: "Käfer-Kokon", type: "Artefakt", rarity: "common", rate: "22%", effect: "Beschwört 3 Skarabäen als Ablenkung." },
-            { name: "Kobra-Peitsche", type: "Nahkampf", rarity: "rare", rate: "9%", effect: "Fügt Vergiftung und Blutung gleichzeitig zu." }
+            { name: "Pharaonen-Rüstung", type: "Rüstung", rarity: "unique", rate: "1.5%", effect: "Erhöht Seelen-Ausbeute und beschwört Mummy-Helfer." }
         ]
     }
 };
+
+let currentPoiList = [];
+
+function drawMap(region) {
+    const canvas = document.getElementById('interactiveMap');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    ctx.fillStyle = region.bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = region.gridColor;
+    ctx.lineWidth = 1;
+    for(let x = 0; x < canvas.width; x += 30) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for(let y = 0; y < canvas.height; y += 30) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+
+    currentPoiList = [];
+    region.pois.forEach(poi => {
+        const px = poi.x * canvas.width;
+        const py = poi.y * canvas.height;
+        currentPoiList.push({ ...poi, px, py, radius: 15 });
+
+        ctx.beginPath();
+        ctx.arc(px, py, 12, 0, Math.PI * 2);
+        ctx.fillStyle = poi.type === 'Boss' ? '#ef4444' : (poi.type === 'Chest' ? '#ffb300' : '#7c4dff');
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(poi.label, px, py + 22);
+    });
+}
+
+document.getElementById('interactiveMap').addEventListener('click', function(e) {
+    const rect = this.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    let hit = false;
+    currentPoiList.forEach(poi => {
+        const dist = Math.hypot(clickX - poi.px, clickY - poi.py);
+        if(dist <= poi.radius + 10) {
+            const poiBox = document.getElementById('poiBox');
+            poiBox.style.display = 'block';
+            poiBox.innerHTML = `<strong>📍 ${poi.label} (${poi.type}):</strong><br>${poi.desc}`;
+            hit = true;
+        }
+    });
+    if(!hit) {
+        document.getElementById('poiBox').style.display = 'none';
+    }
+});
 
 function updateView() {
     const selectedKey = document.getElementById('regionSelect').value;
     const searchFilter = document.getElementById('searchInput').value.toLowerCase();
     const region = mapData[selectedKey];
     
-    document.getElementById('mapInfo').innerHTML = `
-        <img class="map-image" src="${region.image}" alt="${region.name}">
-        <div class="map-details">
-            <div class="map-title">${region.name} (${region.difficulty})</div>
-            <p style="font-size: 0.9rem; color: var(--text-muted);">${region.description}</p>
-        </div>
-    `;
+    document.getElementById('mapTitle').innerText = `${region.name} (${region.difficulty})`;
+    document.getElementById('mapDesc').innerText = region.description;
+    document.getElementById('poiBox').style.display = 'none';
+    
+    drawMap(region);
     
     const dropContainer = document.getElementById('dropList');
     dropContainer.innerHTML = '';
@@ -161,15 +242,9 @@ function updateView() {
     
     document.getElementById('itemCount').innerText = filteredDrops.length;
     
-    if(filteredDrops.length === 0) {
-        dropContainer.innerHTML = '<p style="color: var(--text-muted);">Keine passenden Gegenstände gefunden.</p>';
-        return;
-    }
-    
     filteredDrops.forEach(item => {
         const card = document.createElement('div');
         card.className = `item-card ${item.rarity}`;
-        
         let badgeClass = `badge-${item.rarity}`;
         let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
         
@@ -186,6 +261,11 @@ function updateView() {
         dropContainer.appendChild(card);
     });
 }
+
+window.addEventListener('resize', () => {
+    const selectedKey = document.getElementById('regionSelect').value;
+    drawMap(mapData[selectedKey]);
+});
 
 updateView();
 </script>
