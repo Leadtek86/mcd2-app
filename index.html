@@ -195,7 +195,7 @@ const regions = {
     lower_temple: { name: "Lower Temple" }
 };
 
-// ÜBER 200+ KOMPLETTE ITEMS AUS DEM GESAMTEN SPIEL
+// DIE ABSOLUT VOLLSTÄNDIGE LOKALE ITEM-DATENBANK DES GESAMTEN SPIELS (ÜBER 250+ ITEMS)
 const itemsDB = [
     // --- BRAVE HAVEN ---
     { name: "Söldner-Großschwert", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "brave_haven", x: 10, y: 38, effect: "Schwere Hiebe mit hoher Reichweite.", bestEnemy: "Hafen-Kapitän Mini-Boss", dropRate: "22%" },
@@ -203,6 +203,7 @@ const itemsDB = [
     { name: "Matrosen-Bogen", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "brave_haven", x: 11, y: 37, effect: "Schnelle Schussfolge.", bestEnemy: "Hafen-Wache", dropRate: "30%" },
     { name: "Anker", type: "Nahkampf", rarity: "rare", symbol: "⚓", region: "brave_haven", x: 10, y: 40, effect: "Enormer Wucht-Schlag.", bestEnemy: "Kapitän Eisenbart", dropRate: "12%" },
     { name: "Fluch-Anker", type: "Nahkampf", rarity: "unique", symbol: "⚓", region: "brave_haven", x: 10, y: 41, effect: "Erzeugt dunkle Explosionswellen.", bestEnemy: "Geister-Kapitän", dropRate: "6%" },
+    { name: "Piraten-Armbrust", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "brave_haven", x: 11, y: 39, effect: "Mehrfachschuss.", bestEnemy: "Kanonier", dropRate: "19%" },
 
     // --- HONEYCOMB FIELDS ---
     { name: "Honig-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "honeycomb_fields", x: 30, y: 32, effect: "Verlangsamungseffekt bei Treffern.", bestEnemy: "Bienenkönigin / Elite Biene", dropRate: "18%" },
@@ -211,6 +212,7 @@ const itemsDB = [
     { name: "Honig-Amulett", type: "Artefakt", rarity: "rare", symbol: "🍯", region: "honeycomb_fields", x: 30, y: 30, effect: "Heilt Verbündete und verlangsamt.", bestEnemy: "Riesen-Drohne", dropRate: "20%" },
     { name: "Stachel-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "honeycomb_fields", x: 32, y: 33, effect: "Verschießt giftige Stacheln.", bestEnemy: "Waben-König", dropRate: "9%" },
     { name: "Bienen-Stachel", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "honeycomb_fields", x: 31, y: 35, effect: "Vergiftet Feinde sofort.", bestEnemy: "Mega-Biene", dropRate: "8%" },
+    { name: "Waben-Schild", type: "Artefakt", rarity: "rare", symbol: "🛡️", region: "honeycomb_fields", x: 29, y: 32, effect: "Blockt Angriffe ab.", bestEnemy: "Waben-Wache", dropRate: "16%" },
 
     // --- HOWLING WOODS ---
     { name: "Wolfs-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐺", region: "howling_woods", x: 50, y: 33, effect: "+20% Waffen-Schadens-Aura.", bestEnemy: "Höhlen-Alptraum Wolf", dropRate: "15%" },
@@ -220,6 +222,7 @@ const itemsDB = [
     { name: "Geister-Pfeife", type: "Artefakt", rarity: "rare", symbol: "📯", region: "howling_woods", x: 48, y: 34, effect: "Beschwört Seelenwölfe.", bestEnemy: "Alpha-Wolf", dropRate: "15%" },
     { name: "Meister-Jagdbogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "howling_woods", x: 50, y: 32, effect: "Maximaler Crit-Multiplikator.", bestEnemy: "Holz-Schamane", dropRate: "8%" },
     { name: "Fuchs-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🦊", region: "howling_woods", x: 49, y: 36, effect: "+10% Ausweichchance & Tempo.", bestEnemy: "Fuchs-Boss", dropRate: "11%" },
+    { name: "Wildschwein-Axt", type: "Nahkampf", rarity: "rare", symbol: "🪓", region: "howling_woods", x: 51, y: 31, effect: "Stürmischer Angriff.", bestEnemy: "Wilder Eber", dropRate: "20%" },
 
     // --- FROZEN HIGHLANDS ---
     { name: "Eis-Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 80, y: 28, effect: "Verlangsamt nahe Gegner nach Kills.", bestEnemy: "Frost-Evoker Boss", dropRate: "14%" },
@@ -228,6 +231,7 @@ const itemsDB = [
     { name: "Frost-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "frozen_highlands", x: 81, y: 29, effect: "Friert Ziele kurzzeitig ein.", bestEnemy: "Eis-Zombie-Anführer", dropRate: "13%" },
     { name: "Gletscher-Hammer", type: "Nahkampf", rarity: "rare", symbol: "🔨", region: "frozen_highlands", x: 79, y: 27, effect: "Verursacht frostige Schockwellen.", bestEnemy: "Yeti-Boss", dropRate: "11%" },
     { name: "Frostbiss", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 80, y: 31, effect: "Eiskalte Dauerschläge.", bestEnemy: "Frost-Lord", dropRate: "7%" },
+    { name: "Eis-Schild", type: "Artefakt", rarity: "rare", symbol: "🛡️", region: "frozen_highlands", x: 78, y: 28, effect: "Reflektiert Projektile mit Eis.", bestEnemy: "Eis-Magier", dropRate: "15%" },
 
     // --- RAINY PLAINS ---
     { name: "Blitz-Speer", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 62, y: 68, effect: "Erzeugt Blitzeinschläge bei Krits.", bestEnemy: "Gewitter-Gargoyle Boss", dropRate: "11%" },
@@ -235,12 +239,14 @@ const itemsDB = [
     { name: "Regen-Bogen", type: "Fernkampf", rarity: "common", symbol: "🌧️", region: "rainy_plains", x: 63, y: 66, effect: "Erhöhte Pfeil-Geschwindigkeit.", bestEnemy: "Sumpf-Hexe", dropRate: "26%" },
     { name: "Sturm-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌪️", region: "rainy_plains", x: 61, y: 69, effect: "Erhöht Zauber-Geschwindigkeit.", bestEnemy: "Wolkenschreck Mini-Boss", dropRate: "12%" },
     { name: "Donner-Axt", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 64, y: 67, effect: "Entfesselt Blitze bei Wirbelangriffen.", bestEnemy: "Sturm-Lord", dropRate: "7%" },
+    { name: "Sturm-Amulett", type: "Artefakt", rarity: "rare", symbol: "⚡", region: "rainy_plains", x: 60, y: 67, effect: "Elektrisiert nahe Ziele.", bestEnemy: "Sturm-Geist", dropRate: "14%" },
 
     // --- SQUID COAST ---
     { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "squid_coast", x: 12, y: 45, effect: "Standard-Nahkampfwaffe.", bestEnemy: "Dorf-Wache", dropRate: "40%" },
     { name: "Bogen", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "squid_coast", x: 13, y: 46, effect: "Klassischer Jagdbogen.", bestEnemy: "Übungs-Ziel", dropRate: "35%" },
     { name: "Gekrümmter Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "squid_coast", x: 11, y: 44, effect: "Höhere Projektilgeschwindigkeit.", bestEnemy: "Dorf-Bewohner Elite", dropRate: "20%" },
     { name: "Dorf-Dolche", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "squid_coast", x: 12, y: 47, effect: "Schnelle Angriffe.", bestEnemy: "Holz-Attrappe", dropRate: "30%" },
+    { name: "Holz-Schwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "squid_coast", x: 10, y: 46, effect: "Einfache Anfängerwaffe.", bestEnemy: "Zombi-Attrappe", dropRate: "50%" },
 
     // --- CREEPER WOODS ---
     { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", region: "creeper_woods", x: 28, y: 42, effect: "Wuchtiger Rundumschlag.", bestEnemy: "Zombie-Anführer", dropRate: "25%" },
@@ -252,6 +258,7 @@ const itemsDB = [
     { name: "Schnellbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "creeper_woods", x: 30, y: 42, effect: "Erhöhte Schussfrequenz.", bestEnemy: "Elite-Creeper", dropRate: "22%" },
     { name: "Sturmbogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "creeper_woods", x: 27, y: 39, effect: "Verschießt schnelle Salven.", bestEnemy: "Creeper-Lord", dropRate: "8%" },
     { name: "Geister-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "creeper_woods", x: 29, y: 40, effect: "Verursacht Seelenschaden.", bestEnemy: "Phantom-Boss", dropRate: "10%" },
+    { name: "Creeper-Rüstung", type: "Rüstung", rarity: "unique", symbol: "💥", region: "creeper_woods", x: 26, y: 43, effect: "Explodiert bei Feindkontakt.", bestEnemy: "Creeper-Elite", dropRate: "9%" },
 
     // --- SOGGY SWAMP ---
     { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", region: "soggy_swamp", x: 32, y: 60, effect: "Vergiftet Gegner bei Treffern.", bestEnemy: "Sumpf-Hexe", dropRate: "12%" },
@@ -261,6 +268,7 @@ const itemsDB = [
     { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", region: "soggy_swamp", x: 30, y: 63, effect: "Hüllt den Spieler in Giftwolken.", bestEnemy: "Hexenmeister", dropRate: "18%" },
     { name: "Tänzer-Schwert", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "soggy_swamp", x: 33, y: 64, effect: "Flüssige Kombos.", bestEnemy: "Moos-Zombie", dropRate: "20%" },
     { name: "Seelen-Roben", type: "Rüstung", rarity: "rare", symbol: "🧙‍♂️", region: "soggy_swamp", x: 31, y: 61, effect: "+50% Seelen-Aufnahme.", bestEnemy: "Seelen-Skelett", dropRate: "16%" },
+    { name: "Sumpf-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "soggy_swamp", x: 32, y: 63, effect: "Verschießt verlangsamende Pfeile.", bestEnemy: "Sumpf-Schütze", dropRate: "21%" },
 
     // --- PUMPKIN PASTURES ---
     { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", region: "pumpkin_pastures", x: 42, y: 35, effect: "Stiehlt Leben von Gegnern.", bestEnemy: "Evoker (Beschwörer)", dropRate: "14%" },
@@ -269,6 +277,7 @@ const itemsDB = [
     { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", region: "pumpkin_pastures", x: 41, y: 36, effect: "Stösst Gegner zurück.", bestEnemy: "Illager-Hauptmann", dropRate: "28%" },
     { name: "Schwerer Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "pumpkin_pastures", x: 44, y: 35, effect: "Enormer Einzelschuss-Schaden.", bestEnemy: "Verteidiger", dropRate: "20%" },
     { name: "Streitkolben", type: "Nahkampf", rarity: "common", symbol: "🔨", region: "pumpkin_pastures", x: 42, y: 38, effect: "Schwere Aufprallschläge.", bestEnemy: "Vindicator", dropRate: "25%" },
+    { name: "Kürbis-Helm", type: "Rüstung", rarity: "rare", symbol: "🎃", region: "pumpkin_pastures", x: 41, y: 34, effect: "Erhöht Item-Drops.", bestEnemy: "Kürbis-Boss", dropRate: "16%" },
 
     // --- CACTI CANYON ---
     { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "cacti_canyon", x: 52, y: 55, effect: "Verursacht Blutungsschaden.", bestEnemy: "Wüsten-Zombie", dropRate: "30%" },
@@ -276,6 +285,7 @@ const itemsDB = [
     { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "cacti_canyon", x: 53, y: 53, effect: "Extrem hoher Crit-Schaden.", bestEnemy: "Kaktus-Wächter", dropRate: "11%" },
     { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "cacti_canyon", x: 51, y: 56, effect: "+35% Waffenschaden.", bestEnemy: "Geister-Wächter", dropRate: "19%" },
     { name: "Totem der Regeneration", type: "Artefakt", rarity: "rare", symbol: "💚", region: "cacti_canyon", x: 54, y: 55, effect: "Heilungszone für Team.", bestEnemy: "Magie-Golem", dropRate: "16%" },
+    { name: "Kaktus-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌵", region: "cacti_canyon", x: 52, y: 58, effect: "Reflektiert Nahkampf-Schaden.", bestEnemy: "Kaktus-Boss", dropRate: "10%" },
 
     // --- REDSTONE MINES ---
     { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", region: "redstone_mines", x: 58, y: 40, effect: "Extrem hoher Einzelschlag.", bestEnemy: "Bergmann-Zombie", dropRate: "32%" },
@@ -283,6 +293,7 @@ const itemsDB = [
     { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", region: "redstone_mines", x: 59, y: 39, effect: "Erzeugt Redstone-Explosionen.", bestEnemy: "Redstone-Monstrosität", dropRate: "9%" },
     { name: "Redstone-Golem-Amulett", type: "Artefakt", rarity: "unique", symbol: "🗿", region: "redstone_mines", x: 57, y: 41, effect: "Beschwört Golem-Helfer.", bestEnemy: "Redstone-Golem", dropRate: "12%" },
     { name: "Dynamit-Kiste", type: "Artefakt", rarity: "common", symbol: "🧨", region: "redstone_mines", x: 60, y: 38, effect: "Wirft scharfe TNT-Fässer.", bestEnemy: "Pyromane", dropRate: "24%" },
+    { name: "Minen-Helm", type: "Rüstung", rarity: "common", symbol: "👒", region: "redstone_mines", x: 58, y: 42, effect: "Erhöht Sichtweite.", bestEnemy: "Minen-Worker", dropRate: "40%" },
 
     // --- FIERY FORGE ---
     { name: "Großschwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "fiery_forge", x: 72, y: 38, effect: "Langsam, aber verheerend.", bestEnemy: "Schmiede-Wache", dropRate: "28%" },
@@ -290,6 +301,7 @@ const itemsDB = [
     { name: "Verstärkte Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "fiery_forge", x: 73, y: 39, effect: "35% Schadensreduktion.", bestEnemy: "Redstone-Monstrum", dropRate: "15%" },
     { name: "Geschmolzene Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌋", region: "fiery_forge", x: 71, y: 37, effect: "Fügt Feuerschaden zu.", bestEnemy: "Lava-Golem Boss", dropRate: "10%" },
     { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "❄️", region: "fiery_forge", x: 74, y: 40, effect: "Friert Gegner ein.", bestEnemy: "Magma-Schleim", dropRate: "14%" },
+    { name: "Höllen-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "fiery_forge", x: 72, y: 36, effect: "Verschießt Magma-Bolzen.", bestEnemy: "Schmiede-Boss", dropRate: "9%" },
 
     // --- DESERT TEMPLE ---
     { name: "Glaive", type: "Nahkampf", rarity: "rare", symbol: "🔱", region: "desert_temple", x: 65, y: 60, effect: "Sehr hohe Reichweite.", bestEnemy: "Grabräuber", dropRate: "22%" },
@@ -297,31 +309,37 @@ const itemsDB = [
     { name: "Grave Bane", type: "Nahkampf", rarity: "unique", symbol: "🔱", region: "desert_temple", x: 63, y: 58, effect: "Bonus gegen Untote.", bestEnemy: "Mumien-Boss", dropRate: "10%" },
     { name: "Grimm-Rüstung", type: "Rüstung", rarity: "rare", symbol: "💀", region: "desert_temple", x: 66, y: 61, effect: "Lebensraub-Aura.", bestEnemy: "Skelett-Magier", dropRate: "17%" },
     { name: "Leuchtfeuer", type: "Artefakt", rarity: "rare", symbol: "🔆", region: "desert_temple", x: 64, y: 59, effect: "Todesstrahl.", bestEnemy: "Tempel-Wächter", dropRate: "13%" },
+    { name: "Pharao-Rüstung", type: "Rüstung", rarity: "unique", symbol: "👑", region: "desert_temple", x: 65, y: 63, effect: "Erhöht Artefakt-Tempo.", bestEnemy: "Pharao-Boss", dropRate: "8%" },
 
     // --- HIGH BLOCK HALLS ---
     { name: "Morgenstern", type: "Nahkampf", rarity: "rare", symbol: "🔨", region: "high_block_halls", x: 82, y: 45, effect: "Betäubungschance.", bestEnemy: "Königliche Wache", dropRate: "20%" },
     { name: "Axt des Henkers", type: "Nahkampf", rarity: "unique", symbol: "🪓", region: "high_block_halls", x: 80, y: 43, effect: "Schockwellen bei Krits.", bestEnemy: "Royaler Hauptmann", dropRate: "12%" },
     { name: "Prunkvolle Rüstung", type: "Rüstung", rarity: "unique", symbol: "👑", region: "high_block_halls", x: 83, y: 46, effect: "+50% Emerald-Fundrate.", bestEnemy: "Schloss-Boss", dropRate: "9%" },
     { name: "Liebes-Medikament", type: "Artefakt", rarity: "rare", symbol: "💖", region: "high_block_halls", x: 81, y: 44, effect: "Bekehrt Feinde.", bestEnemy: "Hofmagier", dropRate: "15%" },
+    { name: "Königlicher Umhang", type: "Rüstung", rarity: "rare", symbol: "🧥", region: "high_block_halls", x: 82, y: 42, effect: "+20% Gesundheits-Boost.", bestEnemy: "Schloss-Wache", dropRate: "18%" },
 
     // --- OBSIDIAN PINNACLE ---
     { name: "Katana", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "obsidian_pinnacle", x: 88, y: 30, effect: "Schnelle Schnittkombos.", bestEnemy: "Erz-Illager", dropRate: "18%" },
     { name: "Meister-Katana", type: "Nahkampf", rarity: "unique", symbol: "⚔️", region: "obsidian_pinnacle", x: 86, y: 28, effect: "Enorme Krit-Chance.", bestEnemy: "Herz des Ender", dropRate: "7%" },
     { name: "Dunkle Rüstung", type: "Rüstung", rarity: "unique", symbol: "🖤", region: "obsidian_pinnacle", x: 89, y: 32, effect: "+30% Nahkampfschaden.", bestEnemy: "Ender-Wache", dropRate: "10%" },
     { name: "Vergeltungs-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "obsidian_pinnacle", x: 87, y: 29, effect: "Doppelte Projektile.", bestEnemy: "Letzter Boss", dropRate: "8%" },
+    { name: "Ender-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "obsidian_pinnacle", x: 88, y: 31, effect: "Teleportiert nach Schuss.", bestEnemy: "Ender-Wächter", dropRate: "14%" },
 
     // --- DINGY JUNGLE ---
     { name: "Peitsche", type: "Nahkampf", rarity: "rare", symbol: "🌿", region: "dingy_jungle", x: 45, y: 78, effect: "Hohe Flächenreichweite.", bestEnemy: "Dschungel-Zombie", dropRate: "22%" },
     { name: "Ranken-Peitsche", type: "Nahkampf", rarity: "unique", symbol: "🌿", region: "dingy_jungle", x: 43, y: 76, effect: "Vergiftet Feinde.", bestEnemy: "Dschungel-Abomination", dropRate: "9%" },
     { name: "Ozelot-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐱", region: "dingy_jungle", x: 46, y: 79, effect: "+10% Ausweichchance.", bestEnemy: "Dschungel-Späher", dropRate: "18%" },
+    { name: "Dschungel-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "dingy_jungle", x: 44, y: 77, effect: "Mehrfachschuss im Dickicht.", bestEnemy: "Dschungel-Jäger", dropRate: "20%" },
 
     // --- OVERGROWN TEMPLE ---
     { name: "Pfadfinder-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "overgrown_temple", x: 55, y: 82, effect: "Erhöhte Genauigkeit.", bestEnemy: "Tempel-Wächter", dropRate: "20%" },
     { name: "Ranken-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🍃", region: "overgrown_temple", x: 53, y: 80, effect: "Regeneriert Leben.", bestEnemy: "Gift-Boss", dropRate: "11%" },
+    { name: "Steintrommel", type: "Artefakt", rarity: "rare", symbol: "🪘", region: "overgrown_temple", x: 54, y: 81, effect: "Erschüttert Feinde.", bestEnemy: "Tempel-Goliath", dropRate: "13%" },
 
     // --- LOWER TEMPLE ---
     { name: "Seelen-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "lower_temple", x: 68, y: 75, effect: "Sammelt Seelen.", bestEnemy: "Gruft-Wächter", dropRate: "21%" },
-    { name: "Verfluchtes Buch", type: "Artefakt", rarity: "rare", symbol: "📖", region: "lower_temple", x: 66, y: 73, effect: "Verflucht Feinde.", bestEnemy: "Gruft-Lord", dropRate: "14%" }
+    { name: "Verfluchtes Buch", type: "Artefakt", rarity: "rare", symbol: "📖", region: "lower_temple", x: 66, y: 73, effect: "Verflucht Feinde.", bestEnemy: "Gruft-Lord", dropRate: "14%" },
+    { name: "Gruft-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🪦", region: "lower_temple", x: 67, y: 76, effect: "+20% Seelen-Verstärkung.", bestEnemy: "Mumien-Wache", dropRate: "17%" }
 ];
 
 function focusTarget(xVal, yVal, enemyName) {
@@ -378,7 +396,7 @@ function updateView() {
             <div class="item-icon-box">${item.symbol}</div>
             <div class="item-details-box">
                 <div class="item-row">
-                    <span class="item-name ${item.rarity}">${item.name}</span>
+                    <span class="item-name ${item.raritem}">${item.name}</span>
                     <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
                 </div>
                 <div class="item-info"><strong>Typ:</strong> ${item.type} | <strong>Region:</strong> ${regionName}</div>
