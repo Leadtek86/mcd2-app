@@ -3,246 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Dungeons 2 - Original Maps & Drops</title>
+    <title>Minecraft Dungeons - DB Map & Drops</title>
     <style>
         :root {
-            --bg-dark: #0f1117;
-            --card-bg: #1a1d26;
-            --accent: #7c4dff;
-            --accent-gold: #ffb300;
-            --text-main: #e0e6ed;
-            --text-muted: #94a3b8;
-            --border: #2d3748;
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --border-color: #2c2c2c;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            
+            /* DungeonsDB Seltenheits-Farben */
+            --common: #a0a0a0;
+            --rare: #5555ff;
+            --unique: #ffaa00;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); padding: 15px; }
-        header { text-align: center; margin-bottom: 20px; }
-        h1 { color: var(--accent-gold); font-size: 1.8rem; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255, 179, 0, 0.3); }
-        p.subtitle { color: var(--text-muted); font-size: 0.9rem; }
-        
+
+        header { text-align: center; padding: 15px 0; border-bottom: 2px solid #ffaa00; margin-bottom: 20px; }
+        h1 { color: #ffaa00; font-size: 1.6rem; letter-spacing: 1px; text-transform: uppercase; }
+        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+
         .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        select, input { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-size: 1rem; }
-        
-        .map-card { background: var(--card-bg); border: 1px solid var(--accent); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-        
-        .map-container { position: relative; width: 100%; height: 220px; background: #111; overflow: hidden; }
-        .map-svg { width: 100%; height: 100%; display: block; }
-        
-        .map-pin { position: absolute; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; transform: translate(-50%, -50%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; box-shadow: 0 0 10px rgba(0,0,0,0.9); z-index: 10; }
-        .pin-boss { background: #ef4444; color: #fff; }
-        .pin-chest { background: #ffb300; color: #000; }
-        .pin-secret { background: #a855f7; color: #fff; }
+        select, input { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 0.95rem; }
 
-        .map-instruction { font-size: 0.75rem; color: var(--accent-gold); text-align: center; padding: 6px; background: rgba(0,0,0,0.6); }
-        .map-details { padding: 15px; }
-        .map-title { font-size: 1.2rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 5px; }
-        
-        .poi-info { background: #11141d; border: 1px dashed var(--accent-gold); border-radius: 6px; padding: 10px; margin-top: 10px; font-size: 0.85rem; display: none; }
+        .map-section { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+        .map-header { padding: 15px; background: #252525; border-bottom: 1px solid var(--border-color); }
+        .map-title { font-size: 1.2rem; font-weight: bold; color: #ffaa00; }
+        .map-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
 
-        .drop-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .item-card { background: #13151c; border-left: 4px solid var(--border); border-radius: 6px; padding: 12px; }
-        .item-card.unique { border-left-color: var(--accent-gold); background: linear-gradient(90deg, rgba(255,179,0,0.05) 0%, #13151c 100%); }
-        .item-card.rare { border-left-color: var(--accent); }
-        .item-card.common { border-left-color: #4a5568; }
+        .map-viewer { position: relative; width: 100%; height: 220px; background: #080808; display: flex; align-items: center; justify-content: center; }
+        .map-placeholder-text { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 20px; }
+
+        .section-title { font-size: 1.1rem; color: #ffaa00; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .drop-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
         
-        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .item-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+        .item-card.common { border-left: 5px solid var(--common); }
+        .item-card.rare { border-left: 5px solid var(--rare); }
+        .item-card.unique { border-left: 5px solid var(--unique); background: linear-gradient(90deg, rgba(255,170,0,0.08) 0%, var(--card-bg) 100%); }
+
+        .item-row { display: flex; justify-content: space-between; align-items: center; }
         .item-name { font-weight: bold; font-size: 1rem; }
-        .rarity-badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .badge-unique { background: var(--accent-gold); color: #000; }
-        .badge-rare { background: var(--accent); color: #fff; }
-        .badge-common { background: #4a5568; color: #fff; }
-        
-        .item-details { font-size: 0.85rem; color: var(--text-muted); }
-        .drop-rate { color: #4ade80; font-weight: bold; }
+        .item-name.common { color: var(--common); }
+        .item-name.rare { color: #8888ff; }
+        .item-name.unique { color: var(--unique); }
+
+        .rarity-tag { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+        .tag-common { background: #333; color: var(--common); }
+        .tag-rare { background: #1a1a44; color: #8888ff; }
+        .tag-unique { background: #443300; color: var(--unique); }
+
+        .item-info { font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 12px; }
+        .item-effect { font-size: 0.85rem; color: #dddddd; margin-top: 2px; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Minecraft Dungeons 2</h1>
-    <p class="subtitle">Original Karten-Guide & Drop-Datenbank</p>
+    <h1>Minecraft Dungeons DB</h1>
+    <p class="subtitle">Karten-Übersicht & Loot-Datenbank</p>
 </header>
 
 <div class="controls">
     <select id="regionSelect" onchange="updateView()">
-        <option value="rainy">Regen-Ebenen (Sumpf-Karten)</option>
-        <option value="meadow">Sänger-Wiese (Creeper-Ebenen)</option>
-        <option value="frozen">Gefrorenes Hochland (Gletscher)</option>
-        <option value="huskland">Bescheidenes Ödland (Wüste)</option>
+        <option value="creeper_woods">Creeper-Ebenen (Creeper Woods)</option>
+        <option value="soggy_swamp">Sumpf (Soggy Swamp)</option>
+        <option value="pumpkin_pastures">Kürbisfelder (Pumpkin Pastures)</option>
+        <option value="cacti_canyon">Kakteen-Canyon (Cacti Canyon)</option>
+        <option value="redstone_mines">Redstone-Minen (Redstone Mines)</option>
     </select>
     
-    <input type="text" id="searchInput" placeholder="Gegenstand, Typ oder Effekt suchen..." oninput="updateView()">
+    <input type="text" id="searchInput" placeholder="Gegenstand suchen..." oninput="updateView()">
 </div>
 
-<div class="map-card">
-    <div class="map-container" id="mapWrapper">
-        <div id="svgContainer" style="width:100%; height:100%;"></div>
-        <div id="pinLayer"></div>
+<div class="map-section">
+    <div class="map-header">
+        <div id="mapTitle" class="map-title">Creeper-Ebenen</div>
+        <div id="mapMeta" class="map-meta">Schwierigkeit: Stufe 1+</div>
     </div>
-    <div class="map-instruction">📍 Tippe auf die Pins für Boss-Fundorte, Kisten & Verstecke!</div>
-    <div class="map-details">
-        <div id="mapTitle" class="map-title"></div>
-        <p id="mapDesc" style="font-size: 0.9rem; color: var(--text-muted);"></p>
-        <div id="poiBox" class="poi-info"></div>
+    <div class="map-viewer">
+        <div class="map-placeholder-text" id="mapDesc">
+            Lädt Karten-Daten...
+        </div>
     </div>
 </div>
 
-<h2>Mögliche Beute (<span id="itemCount">0</span> Drops)</h2>
-<div style="margin-top: 10px;" class="drop-grid" id="dropList"></div>
+<div class="section-title">Mögliche Beute (<span id="itemCount">0</span> Items)</div>
+<div class="drop-grid" id="dropList"></div>
 
 <script>
-const mapData = {
-    rainy: {
-        name: "Regen-Ebenen",
-        difficulty: "Stufe 1 - 5",
-        description: "Regnerisches Sumpfgebiet mit verfallenen Holzhütten, Schlammflüssen und Höhlenzugängen.",
-        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
-            <rect width="400" height="220" fill="#2d4a3e"/>
-            <path d="M 0,100 Q 100,50 200,120 T 400,80" fill="none" stroke="#1b2e26" stroke-width="35"/>
-            <path d="M 0,100 Q 100,50 200,120 T 400,80" fill="none" stroke="#3b2d1d" stroke-width="15"/>
-            <rect x="260" y="50" width="50" height="40" fill="#4a3b2c" stroke="#2a1f15" stroke-width="3"/>
-            <polygon points="250,50 285,25 320,50" fill="#1e3a2b"/>
-            <circle cx="60" cy="160" r="30" fill="#233a30"/>
-            <circle cx="150" cy="40" r="25" fill="#233a30"/>
-        </svg>`,
-        pois: [
-            { x: 30, y: 45, label: "Gold-Truhe", type: "chest", desc: "Versteckt hinter der kleinen Holzhütte." },
-            { x: 70, y: 32, label: "Sumpf-Hexe", type: "boss", desc: "Mini-Boss: Droppt seltene Tränke & Sumpf-Dolche." },
-            { x: 50, y: 80, label: "Geheim-Rune", type: "secret", desc: "Drücke den versteckten Schalter am Baum." }
-        ],
+const dungeonsDB = {
+    creeper_woods: {
+        name: "Creeper-Ebenen",
+        english: "Creeper Woods",
+        level: "Empfohlen: Stufe 1+",
+        desc: "Dichte Wälder voller Creepers. Der perfekte Ort, um erste Ausrüstung und Artefakte zu farmen.",
         drops: [
-            { name: "Sumpf-Schwert", type: "Nahkampf", rarity: "common", rate: "35%", effect: "Vergiftet Gegner bei Treffer." },
-            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Hohe Angriffsgeschwindigkeit und Giftschaden." },
-            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", rate: "15%", effect: "Erhöhter kritischer Schaden." },
-            { name: "Sumpf-Rüstung", type: "Rüstung", rarity: "common", rate: "25%", effect: "+15% Giftresistent & +10% Nahkampfschaden." },
-            { name: "Schlamm-Stiefel", type: "Rüstung", rarity: "rare", rate: "10%", effect: "Immunität gegen Verlangsamung im Schlamm." },
-            { name: "Gift-Amulett", type: "Artefakt", rarity: "unique", rate: "3%", effect: "Erzeugt eine große, lang anhaltende Giftwolke." },
-            { name: "Sumpf-Klinge der Schande", type: "Nahkampf", rarity: "unique", rate: "1.5%", effect: "Fügt allen vergifteten Gegnern doppelten Schaden zu." }
+            { name: "Schwert", type: "Nahkampf", rarity: "common", effect: "Standard-Nahkampfwaffe mit schnellen Hieben." },
+            { name: "Axt", type: "Nahkampf", rarity: "common", effect: "Führt einen Rundumschlag aus." },
+            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", effect: "Erhöhter kritischer Trefferschaden." },
+            { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
+            { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
+            { name: "Raketen-Pfeil", type: "Artefakt", rarity: "common", effect: "Verwandelt den nächsten Pfeil in eine Explosion." },
+            { name: "Stiefel der Zügellosigkeit", type: "Artefakt", rarity: "rare", effect: "Erhöht kurzzeitig das Bewegungstempo." }
         ]
     },
-    meadow: {
-        name: "Sänger-Wiese",
-        difficulty: "Stufe 4 - 10",
-        description: "Weite grüne Graslandschaften mit alten Steinruinen und Flussläufen.",
-        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
-            <rect width="400" height="220" fill="#487e3a"/>
-            <path d="M 50,0 C 150,100 100,150 250,220" fill="none" stroke="#2b5c8f" stroke-width="25"/>
-            <rect x="280" y="110" width="60" height="60" fill="#71797e" stroke="#484f54" stroke-width="4"/>
-            <circle cx="100" cy="60" r="20" fill="#3b662e"/>
-            <circle cx="320" cy="40" r="30" fill="#3b662e"/>
-        </svg>`,
-        pois: [
-            { x: 40, y: 50, label: "Ruinen-Altare", type: "secret", desc: "Löse das Steinpuzzle für die Bonus-Kiste." },
-            { x: 80, y: 65, label: "Barden-König", type: "boss", desc: "Boss-Gegner mit starken Flächenangriffen." }
-        ],
+    soggy_swamp: {
+        name: "Sumpf",
+        english: "Soggy Swamp",
+        level: "Empfohlen: Stufe 5+",
+        desc: "Gefährliche Sumpflandschaft. Heimat der Hexen und des Kessel-Golems.",
         drops: [
-            { name: "Wind-Horn", type: "Artefakt", rarity: "common", rate: "40%", effect: "Stößt nahe Gegner zurück und verlangsamt sie." },
-            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", rate: "18%", effect: "+20% Schaden für die gesamte Gruppe." },
-            { name: "Wiegenlied-Klinge", type: "Nahkampf", rarity: "unique", rate: "2.5%", effect: "Schläfert kleine Gegnergruppen für 3 Sek. ein." },
-            { name: "Barde-Armbrust", type: "Fernkampf", rarity: "common", rate: "30%", effect: "Verschießt schallverstärkte Bolzen." },
-            { name: "Harpunen-Bogen", type: "Fernkampf", rarity: "unique", rate: "2.0%", effect: "Durchbohrt mehrere Ziele und wirft sie zurück." }
+            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", effect: "Hohe Angriffsgeschwindigkeit." },
+            { name: "Glaive", type: "Nahkampf", rarity: "common", effect: "Große Nahkampf-Reichweite." },
+            { name: "Giftschwert", type: "Nahkampf", rarity: "unique", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
+            { name: "Sumpf-Gewand", type: "Rüstung", rarity: "rare", rate: "", effect: "+15% Giftresistenz." },
+            { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", effect: "Verschießt 5 Bolzen gleichzeitig." },
+            { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", effect: "Hüllt den Spieler in eine Giftwolke." }
         ]
     },
-    frozen: {
-        name: "Gefrorenes Hochland",
-        difficulty: "Stufe 8 - 15",
-        description: "Eisige Schneegebiete mit rutschigen Passpfaden und Gletscherhöhlen.",
-        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
-            <rect width="400" height="220" fill="#d0e8f5"/>
-            <polygon points="0,220 120,80 220,220" fill="#9bc3d9"/>
-            <polygon points="150,220 280,50 400,220" fill="#7baec9"/>
-            <path d="M 0,180 Q 200,120 400,160" fill="none" stroke="#aee2f2" stroke-width="20"/>
-        </svg>`,
-        pois: [
-            { x: 45, y: 30, label: "Eis-Golem", type: "boss", desc: "Riesiger Eis-Boss mit hoher Verteidigung." },
-            { x: 65, y: 70, label: "Frost-Kiste", type: "chest", desc: "Steht auf einer eisigen Klippe." }
-        ],
+    pumpkin_pastures: {
+        name: "Kürbisfelder",
+        english: "Pumpkin Pastures",
+        level: "Empfohlen: Stufe 10+",
+        desc: "Offene Felder mit Dorfruinen und vielen gepanzerten Gegnerscharen.",
         drops: [
-            { name: "Eis-Spitzhacke", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Verlangsamt gegnerisches Bewegungstempo." },
-            { name: "Schneeball-Artefakt", type: "Artefakt", rarity: "common", rate: "30%", effect: "Schießt automatische Eiskugeln auf nahe Feinde." },
-            { name: "Frost-Gewand", type: "Rüstung", rarity: "rare", rate: "15%", effect: "Gegner, die dich angreifen, frieren kurz ein." },
-            { name: "Frost-Bogen", type: "Fernkampf", rarity: "unique", rate: "1.8%", effect: "Friert Ziele bei Volltreffer für 2 Sekunden ein." }
+            { name: "Sichel", type: "Nahkampf", rarity: "common", effect: "Schnelle Angriffe mit hoher Frequenz." },
+            { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", effect: "Stiehlt Leben von besiegten Gegnern." },
+            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", effect: "-20% erlittener Schaden für das Team." },
+            { name: "Wind-Horn", type: "Artefakt", rarity: "common", effect: "Wirft nahe Gegner zurück." }
         ]
     },
-    huskland: {
-        name: "Bescheidenes Ödland",
-        difficulty: "Stufe 12 - 20",
-        description: "Trockenes Wüstengebiet mit Pyramiden, Canyons und Treibsand.",
-        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
-            <rect width="400" height="220" fill="#d9ad62"/>
-            <polygon points="120,160 200,60 280,160" fill="#b88b42" stroke="#8a6327" stroke-width="2"/>
-            <path d="M 0,80 Q 200,180 400,100" fill="none" stroke="#c2964d" stroke-width="25"/>
-        </svg>`,
-        pois: [
-            { x: 50, y: 40, label: "Pyramide", type: "secret", desc: "Geheimer Eingang im Wüstensand." },
-            { x: 80, y: 25, label: "Skarabäus-König", type: "boss", desc: "Droppt den Wüsten-Küstensäbel." }
-        ],
+    cacti_canyon: {
+        name: "Kakteen-Canyon",
+        english: "Cacti Canyon",
+        level: "Empfohlen: Stufe 15+",
+        desc: "Trockener Canyon mit Schützen und Fallen.",
         drops: [
-            { name: "Wüsten-Küstensäbel", type: "Nahkampf", rarity: "common", rate: "28%", effect: "Schnelle Schläge mit Blutungseffekt." },
-            { name: "Wüsten-Sichel", type: "Nahkampf", rarity: "unique", rate: "2.0%", effect: "Raubt Leben bei jedem kritischen Treffer." },
-            { name: "Sandsturm-Amulett", type: "Artefakt", rarity: "rare", rate: "10%", effect: "Blendet alle Nahkampf-Angreifer im Umkreis." },
-            { name: "Pharaonen-Rüstung", type: "Rüstung", rarity: "unique", rate: "1.5%", effect: "Erhöht Seelen-Ausbeute und beschwört Mummy-Helfer." }
+            { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", effect: "Fügt Blutungsschaden zu." },
+            { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", effect: "Hoher Einzelschuss-Schaden." },
+            { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", effect: "+35% Waffenschaden." }
+        ]
+    },
+    redstone_mines: {
+        name: "Redstone-Minen",
+        english: "Redstone Mines",
+        level: "Empfohlen: Stufe 20+",
+        desc: "Dunkle Minen voll mit Redstone-Monstern und Spinnen.",
+        drops: [
+            { name: "Spitzhacke", type: "Nahkampf", rarity: "common", effect: "Hoher Schaden pro Schlag." },
+            { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", effect: "Erzeugt kleine Redstone-Explosionen." },
+            { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "rare", effect: "Flächenschaden im Zielgebiet." }
         ]
     }
 };
 
-function showPoiDetails(title, type, desc) {
-    const poiBox = document.getElementById('poiBox');
-    poiBox.style.display = 'block';
-    let icon = type === 'boss' ? '💀' : (type === 'chest' ? '📦' : '🔍');
-    poiBox.innerHTML = `<strong>${icon} ${title}:</strong><br>${desc}`;
-}
-
 function updateView() {
     const selectedKey = document.getElementById('regionSelect').value;
     const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-    const region = mapData[selectedKey];
-    
-    document.getElementById('svgContainer').innerHTML = region.svg;
-    document.getElementById('mapTitle').innerText = `${region.name} (${region.difficulty})`;
-    document.getElementById('mapDesc').innerText = region.description;
-    document.getElementById('poiBox').style.display = 'none';
-    
-    const pinLayer = document.getElementById('pinLayer');
-    pinLayer.innerHTML = '';
-    
-    region.pois.forEach(poi => {
-        const pin = document.createElement('div');
-        pin.className = `map-pin pin-${poi.type}`;
-        pin.style.left = `${poi.x}%`;
-        pin.style.top = `${poi.y}%`;
-        pin.innerHTML = poi.type === 'boss' ? '💀' : (poi.type === 'chest' ? '📦' : '🔍');
-        
-        pin.onclick = () => showPoiDetails(poi.label, poi.type, poi.desc);
-        pinLayer.appendChild(pin);
-    });
-    
+    const region = dungeonsDB[selectedKey];
+
+    document.getElementById('mapTitle').innerText = `${region.name} (${region.english})`;
+    document.getElementById('mapMeta').innerText = region.level;
+    document.getElementById('mapDesc').innerText = region.desc;
+
     const dropContainer = document.getElementById('dropList');
     dropContainer.innerHTML = '';
-    
+
     const filteredDrops = region.drops.filter(item => 
         item.name.toLowerCase().includes(searchFilter) || 
         item.type.toLowerCase().includes(searchFilter) ||
         item.effect.toLowerCase().includes(searchFilter)
     );
-    
+
     document.getElementById('itemCount').innerText = filteredDrops.length;
-    
+
     filteredDrops.forEach(item => {
         const card = document.createElement('div');
         card.className = `item-card ${item.rarity}`;
-        let badgeClass = `badge-${item.rarity}`;
+
         let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
-        
+
         card.innerHTML = `
-            <div class="item-header">
-                <span class="item-name">${item.name}</span>
-                <span class="rarity-badge ${badgeClass}">${rarityText}</span>
+            <div class="item-row">
+                <span class="item-name ${item.rarity}">${item.name}</span>
+                <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
             </div>
-            <div class="item-details">
-                <p><strong>Typ:</strong> ${item.type} | <strong>Beute-Chance:</strong> <span class="drop-rate">${item.rate}</span></p>
-                <p style="margin-top: 4px;"><em>${item.effect}</em></p>
+            <div class="item-info">
+                <span><strong>Kategorie:</strong> ${item.type}</span>
             </div>
+            <div class="item-effect">${item.effect}</div>
         `;
         dropContainer.appendChild(card);
     });
