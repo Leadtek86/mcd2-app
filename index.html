@@ -11,84 +11,195 @@
             --border-color: #2c2c2c;
             --text-main: #ffffff;
             --text-muted: #aaaaaa;
+            
             --common: #a0a0a0;
             --rare: #5555ff;
             --unique: #ffaa00;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); padding: 15px; }
+
         header { text-align: center; padding: 15px 0; border-bottom: 2px solid #ffaa00; margin-bottom: 20px; }
-        h1 { color: #ffaa00; font-size: 1.6rem; text-transform: uppercase; }
+        h1 { color: #ffaa00; font-size: 1.6rem; letter-spacing: 1px; text-transform: uppercase; }
+        p.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+
         .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        select, input { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; }
+        select, input { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 0.95rem; }
+
         .map-section { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
         .map-header { padding: 15px; background: #252525; border-bottom: 1px solid var(--border-color); }
         .map-title { font-size: 1.2rem; font-weight: bold; color: #ffaa00; }
-        .map-viewer { width: 100%; height: 200px; background: #000; }
-        .map-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .map-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+        .map-viewer { position: relative; width: 100%; height: 200px; background: #000; overflow: hidden; }
+        .map-image { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+
+        .section-title { font-size: 1.1rem; color: #ffaa00; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
         .drop-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .item-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; gap: 12px; align-items: center; }
+        
+        .item-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 6px; position: relative; }
         .item-card.common { border-left: 5px solid var(--common); }
         .item-card.rare { border-left: 5px solid var(--rare); }
-        .item-card.unique { border-left: 5px solid var(--unique); }
-        .item-name { font-weight: bold; }
+        .item-card.unique { border-left: 5px solid var(--unique); background: linear-gradient(90deg, rgba(255,170,0,0.08) 0%, var(--card-bg) 100%); }
+
+        .item-row { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-weight: bold; font-size: 1rem; }
+        .item-name.common { color: var(--common); }
+        .item-name.rare { color: #8888ff; }
+        .item-name.unique { color: var(--unique); }
+
+        .rarity-tag { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+        .tag-common { background: #333; color: var(--common); }
+        .tag-rare { background: #1a1a44; color: #8888ff; }
+        .tag-unique { background: #443300; color: var(--unique); }
+
+        .item-info { font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 12px; }
+        .item-effect { font-size: 0.85rem; color: #dddddd; margin-top: 2px; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Minecraft Dungeons DB</h1>
+    <p class="subtitle">Karten-Übersicht & Loot-Datenbank</p>
 </header>
 
 <div class="controls">
     <select id="regionSelect" onchange="updateView()">
-        <option value="creeper_woods">Creeper-Ebenen</option>
-        <option value="soggy_swamp">Sumpf</option>
+        <option value="creeper_woods">Creeper-Ebenen (Creeper Woods)</option>
+        <option value="soggy_swamp">Sumpf (Soggy Swamp)</option>
+        <option value="pumpkin_pastures">Kürbisfelder (Pumpkin Pastures)</option>
+        <option value="cacti_canyon">Kakteen-Canyon (Cacti Canyon)</option>
+        <option value="redstone_mines">Redstone-Minen (Redstone Mines)</option>
     </select>
+    
     <input type="text" id="searchInput" placeholder="Gegenstand suchen..." oninput="updateView()">
 </div>
 
 <div class="map-section">
     <div class="map-header">
         <div id="mapTitle" class="map-title">Creeper-Ebenen</div>
+        <div id="mapMeta" class="map-meta">Schwierigkeit: Stufe 1+</div>
     </div>
     <div class="map-viewer">
-        <img id="mapImg" class="map-image" src="" alt="Original Map">
+        <img id="mapImg" class="map-image" src="" alt="Kartengrafik">
     </div>
 </div>
 
+<div class="section-title">Mögliche Beute (<span id="itemCount">0</span> Items)</div>
 <div class="drop-grid" id="dropList"></div>
 
 <script>
 const dungeonsDB = {
     creeper_woods: {
         name: "Creeper-Ebenen",
-        image: "https://www.dungeonsdb.com/images/maps/creeper_woods.jpg",
+        english: "Creeper Woods",
+        level: "Empfohlen: Stufe 1+",
+        image: "https://images.unsplash.com/photo-1511497584788-876761c11932?w=800&auto=format&fit=crop",
+        desc: "Dichte Wälder voller Creepers. Der perfekte Ort, um erste Ausrüstung und Artefakte zu farmen.",
         drops: [
-            { name: "Schwert", type: "Nahkampf", rarity: "common", effect: "Schnelle Hiebe." }
+            { name: "Schwert", type: "Nahkampf", rarity: "common", effect: "Standard-Nahkampfwaffe mit schnellen Hieben." },
+            { name: "Axt", type: "Nahkampf", rarity: "common", effect: "Führt einen wuchtigen Rundumschlag aus." },
+            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", effect: "Erhöhter kritischer Trefferschaden." },
+            { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
+            { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
+            { name: "Raketen-Pfeil", type: "Artefakt", rarity: "common", effect: "Verwandelt den nächsten Pfeil in eine Explosion." }
         ]
     },
     soggy_swamp: {
         name: "Sumpf",
-        image: "https://www.dungeonsdb.com/images/maps/soggy_swamp.jpg",
+        english: "Soggy Swamp",
+        level: "Empfohlen: Stufe 5+",
+        image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop",
+        desc: "Gefährliche Sumpflandschaft. Heimat der Hexen und des Kessel-Golems.",
         drops: [
-            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", effect: "Hohe Geschwindigkeit." }
+            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", effect: "Hohe Angriffsgeschwindigkeit." },
+            { name: "Giftschwert", type: "Nahkampf", rarity: "unique", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
+            { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", effect: "Verschießt 5 Bolzen gleichzeitig." },
+            { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", effect: "Hüllt den Spieler in eine giftige Wolke." }
+        ]
+    },
+    pumpkin_pastures: {
+        name: "Kürbisfelder",
+        english: "Pumpkin Pastures",
+        level: "Empfohlen: Stufe 10+",
+        image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800&auto=format&fit=crop",
+        desc: "Offene Felder mit Dorfruinen und vielen gepanzerten Gegnerscharen.",
+        drops: [
+            { name: "Sichel", type: "Nahkampf", rarity: "common", effect: "Schnelle Angriffe mit hoher Frequenz." },
+            { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", effect: "Stiehlt Leben von besiegten Gegnern." },
+            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", effect: "-20% erlittener Schaden für das Team." },
+            { name: "Wind-Horn", type: "Artefakt", rarity: "common", effect: "Wirft nahe Gegner wirkungsvoll zurück." }
+        ]
+    },
+    cacti_canyon: {
+        name: "Kakteen-Canyon",
+        english: "Cacti Canyon",
+        level: "Empfohlen: Stufe 15+",
+        image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop",
+        desc: "Trockener Canyon mit Schützen und tückischen Fallen.",
+        drops: [
+            { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", effect: "Fügt gegnerischen Zielen Blutungsschaden zu." },
+            { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", effect: "Enorm hoher Einzelschuss-Schaden." },
+            { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", effect: "+35% allgemeiner Waffenschaden." }
+        ]
+    },
+    redstone_mines: {
+        name: "Redstone-Minen",
+        english: "Redstone-Minen",
+        level: "Empfohlen: Stufe 20+",
+        image: "https://images.unsplash.com/photo-1511497584788-876761c11932?w=800&auto=format&fit=crop",
+        desc: "Dunkle Minen voll mit Redstone-Monstern und explosiven Fallen.",
+        drops: [
+            { name: "Spitzhacke", type: "Nahkampf", rarity: "common", effect: "Extrem hoher Schaden pro Einzelschlag." },
+            { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern." },
+            { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "rare", effect: "Verursacht heftigen Flächenschaden im Zielgebiet." }
         ]
     }
 };
 
 function updateView() {
     const selectedKey = document.getElementById('regionSelect').value;
+    const searchFilter = document.getElementById('searchInput').value.toLowerCase();
     const region = dungeonsDB[selectedKey];
-    document.getElementById('mapTitle').innerText = region.name;
+
+    document.getElementById('mapTitle').innerText = `${region.name} (${region.english})`;
+    document.getElementById('mapMeta').innerText = region.level;
     document.getElementById('mapImg').src = region.image;
-    
+
     const dropContainer = document.getElementById('dropList');
     dropContainer.innerHTML = '';
-    region.drops.forEach(item => {
-        dropContainer.innerHTML += `<div class="item-card ${item.rarity}"><span class="item-name">${item.name}</span></div>`;
+
+    const filteredDrops = region.drops.filter(item => 
+        item.name.toLowerCase().includes(searchFilter) || 
+        item.type.toLowerCase().includes(searchFilter) ||
+        item.effect.toLowerCase().includes(searchFilter)
+    );
+
+    document.getElementById('itemCount').innerText = filteredDrops.length;
+
+    filteredDrops.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `item-card ${item.rarity}`;
+
+        let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
+
+        card.innerHTML = `
+            <div class="item-row">
+                <span class="item-name ${item.rarity}">${item.name}</span>
+                <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
+            </div>
+            <div class="item-info">
+                <span><strong>Kategorie:</strong> ${item.type}</span>
+            </div>
+            <div class="item-effect">${item.effect}</div>
+        `;
+        dropContainer.appendChild(card);
     });
 }
+
 updateView();
 </script>
 
