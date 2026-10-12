@@ -25,15 +25,15 @@
         
         .map-card { background: var(--card-bg); border: 1px solid var(--accent); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
         
-        .map-container { position: relative; width: 100%; height: 220px; background: #000; overflow: hidden; }
-        .map-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.85; }
+        .map-container { position: relative; width: 100%; height: 220px; background: #111; overflow: hidden; }
+        .map-svg { width: 100%; height: 100%; display: block; }
         
-        .map-pin { position: absolute; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; transform: translate(-50%, -50%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; box-shadow: 0 0 8px rgba(0,0,0,0.8); }
+        .map-pin { position: absolute; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; transform: translate(-50%, -50%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; box-shadow: 0 0 10px rgba(0,0,0,0.9); z-index: 10; }
         .pin-boss { background: #ef4444; color: #fff; }
         .pin-chest { background: #ffb300; color: #000; }
         .pin-secret { background: #a855f7; color: #fff; }
 
-        .map-instruction { font-size: 0.75rem; color: var(--accent-gold); text-align: center; padding: 5px; background: rgba(0,0,0,0.6); }
+        .map-instruction { font-size: 0.75rem; color: var(--accent-gold); text-align: center; padding: 6px; background: rgba(0,0,0,0.6); }
         .map-details { padding: 15px; }
         .map-title { font-size: 1.2rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 5px; }
         
@@ -60,7 +60,7 @@
 
 <header>
     <h1>Minecraft Dungeons 2</h1>
-    <p class="subtitle">Original Karten & Drop-Datenbank</p>
+    <p class="subtitle">Original Karten-Guide & Drop-Datenbank</p>
 </header>
 
 <div class="controls">
@@ -76,10 +76,10 @@
 
 <div class="map-card">
     <div class="map-container" id="mapWrapper">
-        <img id="mapImage" class="map-img" src="" alt="Map Grafik">
+        <div id="svgContainer" style="width:100%; height:100%;"></div>
         <div id="pinLayer"></div>
     </div>
-    <div class="map-instruction">📍 Tippe auf die farbigen Punkte für Boss-Standorte & Verstecke!</div>
+    <div class="map-instruction">📍 Tippe auf die Pins für Boss-Fundorte, Kisten & Verstecke!</div>
     <div class="map-details">
         <div id="mapTitle" class="map-title"></div>
         <p id="mapDesc" style="font-size: 0.9rem; color: var(--text-muted);"></p>
@@ -95,11 +95,19 @@ const mapData = {
     rainy: {
         name: "Regen-Ebenen",
         difficulty: "Stufe 1 - 5",
-        description: "Regnerisches Sumpfgebiet mit verfallenen Holzhütten und Höhlenzugängen.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Minecraft_Swamp.png/800px-Minecraft_Swamp.png",
+        description: "Regnerisches Sumpfgebiet mit verfallenen Holzhütten, Schlammflüssen und Höhlenzugängen.",
+        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#2d4a3e"/>
+            <path d="M 0,100 Q 100,50 200,120 T 400,80" fill="none" stroke="#1b2e26" stroke-width="35"/>
+            <path d="M 0,100 Q 100,50 200,120 T 400,80" fill="none" stroke="#3b2d1d" stroke-width="15"/>
+            <rect x="260" y="50" width="50" height="40" fill="#4a3b2c" stroke="#2a1f15" stroke-width="3"/>
+            <polygon points="250,50 285,25 320,50" fill="#1e3a2b"/>
+            <circle cx="60" cy="160" r="30" fill="#233a30"/>
+            <circle cx="150" cy="40" r="25" fill="#233a30"/>
+        </svg>`,
         pois: [
             { x: 30, y: 45, label: "Gold-Truhe", type: "chest", desc: "Versteckt hinter der kleinen Holzhütte." },
-            { x: 75, y: 35, label: "Sumpf-Hexe", type: "boss", desc: "Droppt seltene Tränke & Sumpf-Dolche." },
+            { x: 70, y: 32, label: "Sumpf-Hexe", type: "boss", desc: "Mini-Boss: Droppt seltene Tränke & Sumpf-Dolche." },
             { x: 50, y: 80, label: "Geheim-Rune", type: "secret", desc: "Drücke den versteckten Schalter am Baum." }
         ],
         drops: [
@@ -115,8 +123,14 @@ const mapData = {
     meadow: {
         name: "Sänger-Wiese",
         difficulty: "Stufe 4 - 10",
-        description: "Weite grüne Graslandschaften mit alten Steinruinen.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Minecraft_Plains.png/800px-Minecraft_Plains.png",
+        description: "Weite grüne Graslandschaften mit alten Steinruinen und Flussläufen.",
+        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#487e3a"/>
+            <path d="M 50,0 C 150,100 100,150 250,220" fill="none" stroke="#2b5c8f" stroke-width="25"/>
+            <rect x="280" y="110" width="60" height="60" fill="#71797e" stroke="#484f54" stroke-width="4"/>
+            <circle cx="100" cy="60" r="20" fill="#3b662e"/>
+            <circle cx="320" cy="40" r="30" fill="#3b662e"/>
+        </svg>`,
         pois: [
             { x: 40, y: 50, label: "Ruinen-Altare", type: "secret", desc: "Löse das Steinpuzzle für die Bonus-Kiste." },
             { x: 80, y: 65, label: "Barden-König", type: "boss", desc: "Boss-Gegner mit starken Flächenangriffen." }
@@ -132,8 +146,13 @@ const mapData = {
     frozen: {
         name: "Gefrorenes Hochland",
         difficulty: "Stufe 8 - 15",
-        description: "Eisige Schneegebiete mit rutschigen Paspfaden.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Minecraft_Snowy_Tundra.png/800px-Minecraft_Snowy_Tundra.png",
+        description: "Eisige Schneegebiete mit rutschigen Passpfaden und Gletscherhöhlen.",
+        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#d0e8f5"/>
+            <polygon points="0,220 120,80 220,220" fill="#9bc3d9"/>
+            <polygon points="150,220 280,50 400,220" fill="#7baec9"/>
+            <path d="M 0,180 Q 200,120 400,160" fill="none" stroke="#aee2f2" stroke-width="20"/>
+        </svg>`,
         pois: [
             { x: 45, y: 30, label: "Eis-Golem", type: "boss", desc: "Riesiger Eis-Boss mit hoher Verteidigung." },
             { x: 65, y: 70, label: "Frost-Kiste", type: "chest", desc: "Steht auf einer eisigen Klippe." }
@@ -148,8 +167,12 @@ const mapData = {
     huskland: {
         name: "Bescheidenes Ödland",
         difficulty: "Stufe 12 - 20",
-        description: "Trockenes Wüstengebiet mit Pyramiden und Treibsand.",
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Minecraft_Desert.png/800px-Minecraft_Desert.png",
+        description: "Trockenes Wüstengebiet mit Pyramiden, Canyons und Treibsand.",
+        svg: `<svg class="map-svg" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="220" fill="#d9ad62"/>
+            <polygon points="120,160 200,60 280,160" fill="#b88b42" stroke="#8a6327" stroke-width="2"/>
+            <path d="M 0,80 Q 200,180 400,100" fill="none" stroke="#c2964d" stroke-width="25"/>
+        </svg>`,
         pois: [
             { x: 50, y: 40, label: "Pyramide", type: "secret", desc: "Geheimer Eingang im Wüstensand." },
             { x: 80, y: 25, label: "Skarabäus-König", type: "boss", desc: "Droppt den Wüsten-Küstensäbel." }
@@ -175,12 +198,11 @@ function updateView() {
     const searchFilter = document.getElementById('searchInput').value.toLowerCase();
     const region = mapData[selectedKey];
     
-    document.getElementById('mapImage').src = region.image;
+    document.getElementById('svgContainer').innerHTML = region.svg;
     document.getElementById('mapTitle').innerText = `${region.name} (${region.difficulty})`;
     document.getElementById('mapDesc').innerText = region.description;
     document.getElementById('poiBox').style.display = 'none';
     
-    // Pins generieren
     const pinLayer = document.getElementById('pinLayer');
     pinLayer.innerHTML = '';
     
@@ -195,7 +217,6 @@ function updateView() {
         pinLayer.appendChild(pin);
     });
     
-    // Drops rendern
     const dropContainer = document.getElementById('dropList');
     dropContainer.innerHTML = '';
     
