@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Dungeons 2 - Map & Drop Hub</title>
+    <style>
+        :root {
+            --bg-dark: #0f1117;
+            --card-bg: #1a1d26;
+            --accent: #7c4dff;
+            --accent-gold: #ffb300;
+            --text-main: #e0e6ed;
+            --text-muted: #94a3b8;
+            --border: #2d3748;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 15px; }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--accent-gold); font-size: 1.8rem; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255, 179, 0, 0.3); }
+        p.subtitle { color: var(--text-muted); font-size: 0.9rem; }
+        
+        .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        select, input { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-size: 1rem; }
+        
+        .map-card { background: var(--card-bg); border: 1px solid var(--accent); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .map-title { font-size: 1.2rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 5px; }
+        
+        .drop-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .item-card { background: #13151c; border-left: 4px solid var(--border); border-radius: 6px; padding: 12px; }
+        .item-card.unique { border-left-color: var(--accent-gold); background: linear-gradient(90deg, rgba(255,179,0,0.05) 0%, #13151c 100%); }
+        .item-card.rare { border-left-color: var(--accent); }
+        .item-card.common { border-left-color: #4a5568; }
+        
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .item-name { font-weight: bold; font-size: 1rem; }
+        .rarity-badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .badge-unique { background: var(--accent-gold); color: #000; }
+        .badge-rare { background: var(--accent); color: #fff; }
+        .badge-common { background: #4a5568; color: #fff; }
+        
+        .item-details { font-size: 0.85rem; color: var(--text-muted); }
+        .drop-rate { color: #4ade80; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Minecraft Dungeons 2</h1>
+    <p class="subtitle">Map-Guide & Drop-Datenbank</p>
+</header>
+
+<div class="controls">
+    <select id="regionSelect" onchange="updateView()">
+        <option value="rainy">Rainy Plains (Regen-Ebenen)</option>
+        <option value="meadow">Singer's Meadow (Sänger-Wiese)</option>
+        <option value="frozen">Frozen Highlands (Gefrorenes Hochland)</option>
+        <option value="huskland">Humbler Huskland (Ödland)</option>
+    </select>
+    
+    <input type="text" id="searchInput" placeholder="Item suchen..." oninput="updateView()">
+</div>
+
+<div class="map-card" id="mapInfo">
+    <!-- Wird dynamisch gefüllt -->
+</div>
+
+<h2>Mögliche Drops</h2>
+<div style="margin-top: 10px;" class="drop-grid" id="dropList">
+    <!-- Drops werden dynamisch geladen -->
+</div>
+
+<script>
+const mapData = {
+    rainy: {
+        name: "Rainy Plains",
+        difficulty: "Stufe 1 - 5",
+        description: "Regnerisches Startgebiet mit vielen Sumpf-Gegnern und versteckten Höhlen.",
+        drops: [
+            { name: "Sumpf-Schwert", type: "Nahkampf", rarity: "common", rate: "35%", effect: "Vergiftet Gegner bei Treffer" },
+            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", rate: "15%", effect: "Erhöhter kritischer Schaden" },
+            { name: "Gift-Amulett", type: "Artefakt", rarity: "unique", rate: "3%", effect: "Erzeugt eine große Giftwolke" }
+        ]
+    },
+    meadow: {
+        name: "Singer's Meadow",
+        difficulty: "Stufe 4 - 10",
+        description: "Offene Wiesen mit starken Magiern und Sing-Ruinen.",
+        drops: [
+            { name: "Lullaby Blade", type: "Nahkampf", rarity: "unique", rate: "2.5%", effect: "Schläfert kleine Gegnergruppen ein" },
+            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", rate: "18%", effect: "+20% Schaden für die Gruppe" },
+            { name: "Wind-Horn", type: "Artefakt", rarity: "common", rate: "40%", effect: "Stößt nahe Gegner zurück" }
+        ]
+    },
+    frozen: {
+        name: "Frozen Highlands",
+        difficulty: "Stufe 8 - 15",
+        description: "Eisige Bergpässe mit Rutschgefahr und Eis-Wandlern.",
+        drops: [
+            { name: "Eis-Spitzhacke", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Verlangsamt gegnerisches Bewegungstempo" },
+            { name: "Frost-Bogen", type: "Fernkampf", rarity: "unique", rate: "1.8%", effect: "Friert Ziele für 2 Sekunden ein" },
+            { name: "Schneeball-Artefakt", type: "Artefakt", rarity: "common", rate: "30%", effect: "Schießt automatische Eiskugeln" }
+        ]
+    },
+    huskland: {
+        name: "Humbler Huskland",
+        difficulty: "Stufe 12 - 20",
+        description: "Gefährliche Wüste voll mit Husk-Zombies und Fallen.",
+        drops: [
+            { name: "Wüsten-Sichel", type: "Nahkampf", rarity: "unique", rate: "2%", effect: "Raubt Leben bei jedem kritischen Treffer" },
+            { name: "Sandsturm-Amulett", type: "Artefakt", rarity: "rare", rate: "10%", effect: "Blendet alle Nahkampf-Angreifer" }
+        ]
+    }
+};
+
+function updateView() {
+    const selectedKey = document.getElementById('regionSelect').value;
+    const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+    const region = mapData[selectedKey];
+    
+    // Map Info render
+    document.getElementById('mapInfo').innerHTML = `
+        <div class="map-title">${region.name} (${region.difficulty})</div>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">${region.description}</p>
+    `;
+    
+    // Drops render
+    const dropContainer = document.getElementById('dropList');
+    dropContainer.innerHTML = '';
+    
+    const filteredDrops = region.drops.filter(item => 
+        item.name.toLowerCase().includes(searchFilter) || 
+        item.type.toLowerCase().includes(searchFilter)
+    );
+    
+    if(filteredDrops.length === 0) {
+        dropContainer.innerHTML = '<p style="color: var(--text-muted);">Keine passenden Drops gefunden.</p>';
+        return;
+    }
+    
+    filteredDrops.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `item-card ${item.rarity}`;
+        
+        let badgeClass = `badge-${item.rarity}`;
+        let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
+        
+        card.innerHTML = `
+            <div class="item-header">
+                <span class="item-name">${item.name}</span>
+                <span class="rarity-badge ${badgeClass}">${rarityText}</span>
+            </div>
+            <div class="item-details">
+                <p><strong>Typ:</strong> ${item.type} | <strong>Drop-Chance:</strong> <span class="drop-rate">${item.rate}</span></p>
+                <p style="margin-top: 4px;"><em>${item.effect}</em></p>
+            </div>
+        `;
+        dropContainer.appendChild(card);
+    });
+}
+
+// Initialer Aufruf
+updateView();
+</script>
+
+</body>
+</html>
