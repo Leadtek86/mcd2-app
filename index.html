@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Dungeons II - Interaktive Karte</title>
+    <title>Minecraft Dungeons DB - Map & Items</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -13,75 +13,118 @@
             --accent-gold: #f0883e;
             --text-main: #c9d1d9;
             --text-muted: #8b949e;
+            
+            --common: #a0a0a0;
+            --rare: #5555ff;
+            --unique: #ffaa00;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); padding: 10px; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; }
 
-        header { text-align: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
+        header { text-align: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
         h1 { color: var(--accent-gold); font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; }
         p.subtitle { color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
 
-        .map-viewport { position: relative; width: 100%; height: 350px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        
-        /* Simulierter Karten-Hintergrund im Stil von MetaBot / DungeonsDB */
-        .map-canvas-bg { width: 100%; height: 100%; background: radial-gradient(circle at center, #1f2937 0%, #0b0f17 100%); position: relative; cursor: grab; display: flex; align-items: center; justify-content: center; }
+        .section-title { font-size: 1rem; color: var(--accent-gold); margin: 15px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Karten-Bereich im MetaBot-Stil */
+        .map-viewport { position: relative; width: 100%; height: 280px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        .map-canvas-bg { width: 100%; height: 100%; background: radial-gradient(circle at center, #1f2937 0%, #0b0f17 100%); position: relative; display: flex; align-items: center; justify-content: center; }
         .map-grid-lines { position: absolute; width: 100%; height: 100%; background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 30px 30px; }
 
-        /* Interaktive Pins auf der Karte */
-        .map-pin { position: absolute; width: 22px; height: 22px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 2px solid #fff; box-shadow: 0 0 6px rgba(0,0,0,0.8); transition: transform 0.2s; }
-        .map-pin:hover { transform: translate(-50%, -50%) scale(1.2); }
+        .map-pin { position: absolute; width: 22px; height: 22px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 2px solid #fff; box-shadow: 0 0 6px rgba(0,0,0,0.8); }
         .pin-dungeon { background: #ef4444; color: #fff; }
         .pin-chest { background: #f59e0b; color: #000; }
         .pin-station { background: #3b82f6; color: #fff; }
         .pin-rift { background: #8b5cf6; color: #fff; }
 
-        .map-controls-bar { display: flex; gap: 8px; margin: 12px 0; overflow-x: auto; padding-bottom: 5px; }
-        .filter-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
+        .map-controls-bar { display: flex; gap: 6px; margin: 10px 0; overflow-x: auto; padding-bottom: 4px; }
+        .filter-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
         .filter-btn.active { background: var(--accent-gold); color: #000; font-weight: bold; border-color: var(--accent-gold); }
 
-        .info-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 0.85rem; display: none; }
-        .info-title { font-weight: bold; color: var(--accent-gold); margin-bottom: 4px; font-size: 0.95rem; }
+        .info-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-top: 8px; font-size: 0.8rem; display: none; }
+        .info-title { font-weight: bold; color: var(--accent-gold); margin-bottom: 2px; }
 
-        .coords-display { position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+        .coords-display { position: absolute; bottom: 6px; right: 8px; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: var(--text-muted); font-family: monospace; }
+
+        /* Suchleiste & Drop-Datenbank */
+        .controls { display: flex; flex-direction: column; gap: 8px; margin: 15px 0; }
+        select, input { width: 100%; padding: 10px; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 0.9rem; }
+
+        .drop-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .item-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; gap: 10px; align-items: center; }
+        .item-card.common { border-left: 4px solid var(--common); }
+        .item-card.rare { border-left: 4px solid var(--rare); }
+        .item-card.unique { border-left: 4px solid var(--unique); background: linear-gradient(90deg, rgba(255,170,0,0.06) 0%, var(--card-bg) 100%); }
+
+        .item-icon-box { width: 40px; height: 40px; background: #0d1117; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .item-details-box { flex-grow: 1; display: flex; flex-direction: column; gap: 2px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-weight: bold; font-size: 0.95rem; }
+        .item-name.common { color: var(--common); }
+        .item-name.rare { color: #8888ff; }
+        .item-name.unique { color: var(--unique); }
+
+        .rarity-tag { font-size: 0.65rem; font-weight: bold; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; }
+        .tag-common { background: #333; color: var(--common); }
+        .tag-rare { background: #1a1a44; color: #8888ff; }
+        .tag-unique { background: #443300; color: var(--unique); }
+
+        .item-info { font-size: 0.75rem; color: var(--text-muted); }
+        .item-effect { font-size: 0.8rem; color: #ddd; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Minecraft Dungeons II Map</h1>
-    <p class="subtitle">Oberwelt & Sift (MetaBot.GG Stil)</p>
+    <h1>Minecraft Dungeons DB</h1>
+    <p class="subtitle">MetaBot Map & Loot-Datenbank</p>
 </header>
 
+<!-- Karten-Sektion im MetaBot-Stil -->
+<div class="section-title">Interaktive Weltkarte (MetaBot Stil)</div>
 <div class="map-controls-bar">
-    <button class="filter-btn active" onclick="filterMap('all', this)">Alle (608)</button>
-    <button class="filter-btn" onclick="filterMap('dungeon', this)">Verliese (39)</button>
-    <button class="filter-btn" onclick="filterMap('chest', this)">Kisten (112)</button>
-    <button class="filter-btn" onclick="filterMap('station', this)">Loren (20)</button>
-    <button class="filter-btn" onclick="filterMap('rift', this)">Risse (46)</button>
+    <button class="filter-btn active" onclick="filterMap('all', this)">Alle</button>
+    <button class="filter-btn" onclick="filterMap('dungeon', this)">Verliese</button>
+    <button class="filter-btn" onclick="filterMap('chest', this)">Kisten</button>
+    <button class="filter-btn" onclick="filterMap('station', this)">Loren</button>
+    <button class="filter-btn" onclick="filterMap('rift', this)">Risse</button>
 </div>
 
 <div class="map-viewport">
-    <div class="map-canvas-bg" id="mapCanvas" onclick="resetInfo()">
+    <div class="map-canvas-bg" onclick="resetInfo()">
         <div class="map-grid-lines"></div>
-        
-        <!-- Pins platziert nach Koordinaten (z.B. v=2404,3762) -->
         <div class="map-pin pin-dungeon" style="top: 35%; left: 25%;" onclick="showInfo(event, 'Verlies: Honigwabenfelder', 'Empfohlene Stufe 2. Eingang zu verdeckten Kammern.')">🏰</div>
         <div class="map-pin pin-chest" style="top: 50%; left: 45%;" onclick="showInfo(event, 'Gold-Truhe #42', 'Enthält seltene Rüstungsteile und Smaragde.')">📦</div>
         <div class="map-pin pin-station" style="top: 70%; left: 65%;" onclick="showInfo(event, 'Lorenstation: Honeybrook', 'Schnellreisepunkt zur Verbindung mit der Basis.')">🚂</div>
-        <div class="map-pin pin-rift" style="top: 25%; left: 80%;" onclick="showInfo(event, 'Seelenriss #12', 'Führt in die Schattenebene des Sift.')">🌀</div>
-        <div class="map-pin pin-dungeon" style="top: 60%; left: 20%;" onclick="showInfo(event, 'Verlies: Heulwälder', 'Empfohlene Stufe 6. Vorsicht vor Gruft-Gegnern.')">🏰</div>
-        
+        <div class="map-pin pin-rift" style="top: 25%; left: 80%;" onclick="showInfo(event, 'Seelenriss #12', 'Führt in die Schattenebene.')">🌀</div>
         <div class="coords-display">X: 2404 | Z: 3762 | Zoom: 1.5x</div>
     </div>
 </div>
 
 <div id="infoPanel" class="info-panel">
-    <div id="infoTitle" class="info-title">Wähle einen Punkt</div>
-    <div id="infoDesc" style="color: var(--text-muted);">Tippe auf einen farbigen Marker auf der Karte, um Details zu sehen.</div>
+    <div id="infoTitle" class="info-title">Punkt-Info</div>
+    <div id="infoDesc" style="color: var(--text-muted);">Tippe auf einen Pin auf der Karte.</div>
 </div>
 
+<!-- Item & Loot Datenbank Sektion -->
+<div class="section-title">Loot-Datenbank (<span id="itemCount">0</span> Items)</div>
+<div class="controls">
+    <select id="regionSelect" onchange="updateView()">
+        <option value="creeper_woods">Creeper-Ebenen (Creeper Woods)</option>
+        <option value="soggy_swamp">Sumpf (Soggy Swamp)</option>
+        <option value="pumpkin_pastures">Kürbisfelder (Pumpkin Pastures)</option>
+        <option value="cacti_canyon">Kakteen-Canyon (Cacti Canyon)</option>
+        <option value="redstone_mines">Redstone-Minen (Redstone Mines)</option>
+    </select>
+    <input type="text" id="searchInput" placeholder="Gegenstand oder Effekt suchen..." oninput="updateView()">
+</div>
+
+<div class="drop-grid" id="dropList"></div>
+
 <script>
+// Karten-Funktionen
 function showInfo(event, title, desc) {
     event.stopPropagation();
     const panel = document.getElementById('infoPanel');
@@ -97,9 +140,7 @@ function resetInfo() {
 function filterMap(type, btn) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    
-    const pins = document.querySelectorAll('.map-pin');
-    pins.forEach(pin => {
+    document.querySelectorAll('.map-pin').forEach(pin => {
         if(type === 'all' || pin.classList.contains('pin-' + type)) {
             pin.style.display = 'flex';
         } else {
@@ -107,6 +148,88 @@ function filterMap(type, btn) {
         }
     });
 }
+
+// Item-Datenbank
+const dungeonsDB = {
+    creeper_woods: {
+        drops: [
+            { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", effect: "Standard-Nahkampfwaffe mit schnellen Hieben." },
+            { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", effect: "Führt einen wuchtigen Rundumschlag aus." },
+            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", effect: "Erhöhter kritischer Trefferschaden." },
+            { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
+            { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
+            { name: "Raketen-Pfeil", type: "Artefakt", rarity: "common", symbol: "🚀", effect: "Verwandelt den nächsten Pfeil in eine Explosion." }
+        ]
+    },
+    soggy_swamp: {
+        drops: [
+            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", symbol: "🗡️", effect: "Hohe Angriffsgeschwindigkeit." },
+            { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
+            { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Verschießt 5 Bolzen gleichzeitig." },
+            { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", effect: "Hüllt den Spieler in eine giftige Wolke." }
+        ]
+    },
+    pumpkin_pastures: {
+        drops: [
+            { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", effect: "Schnelle Angriffe mit hoher Frequenz." },
+            { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", effect: "Stiehlt Leben von besiegten Gegnern." },
+            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "-20% erlittener Schaden für das Team." },
+            { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", effect: "Wirft nahe Gegner wirkungsvoll zurück." }
+        ]
+    },
+    cacti_canyon: {
+        drops: [
+            { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", symbol: "⚔️", effect: "Fügt gegnerischen Zielen Blutungsschaden zu." },
+            { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Enorm hoher Einzelschuss-Schaden." },
+            { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+35% allgemeiner Waffenschaden." }
+        ]
+    },
+    redstone_mines: {
+        drops: [
+            { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", effect: "Extrem hoher Schaden pro Einzelschlag." },
+            { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern." },
+            { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "rare", symbol: "🎆", effect: "Verursacht heftigen Flächenschaden im Zielgebiet." }
+        ]
+    }
+};
+
+function updateView() {
+    const selectedKey = document.getElementById('regionSelect').value;
+    const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+    const regionData = dungeonsDB[selectedKey];
+
+    const dropContainer = document.getElementById('dropList');
+    dropContainer.innerHTML = '';
+
+    const filteredDrops = regionData.drops.filter(item => 
+        item.name.toLowerCase().includes(searchFilter) || 
+        item.type.toLowerCase().includes(searchFilter) ||
+        item.effect.toLowerCase().includes(searchFilter)
+    );
+
+    document.getElementById('itemCount').innerText = filteredDrops.length;
+
+    filteredDrops.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `item-card ${item.rarity}`;
+        let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
+
+        card.innerHTML = `
+            <div class="item-icon-box">${item.symbol}</div>
+            <div class="item-details-box">
+                <div class="item-row">
+                    <span class="item-name ${item.rarity}">${item.name}</span>
+                    <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
+                </div>
+                <div class="item-info"><strong>Kategorie:</strong> ${item.type}</div>
+                <div class="item-effect">${item.effect}</div>
+            </div>
+        `;
+        dropContainer.appendChild(card);
+    });
+}
+
+updateView();
 </script>
 
 </body>
