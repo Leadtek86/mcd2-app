@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Dungeons 2 - Karten & Drops</title>
+    <title>Minecraft Dungeons 2 - Vollständige Drop-Datenbank</title>
     <style>
         :root {
             --bg-dark: #0f1117;
@@ -49,7 +49,7 @@
 
 <header>
     <h1>Minecraft Dungeons 2</h1>
-    <p class="subtitle">Karten-Guide & Drop-Datenbank</p>
+    <p class="subtitle">Karten-Guide & Complete Drop-Datenbank</p>
 </header>
 
 <div class="controls">
@@ -60,16 +60,16 @@
         <option value="huskland">Bescheidenes Ödland (Humbler Huskland)</option>
     </select>
     
-    <input type="text" id="searchInput" placeholder="Gegenstand suchen..." oninput="updateView()">
+    <input type="text" id="searchInput" placeholder="Gegenstand, Typ oder Effekt suchen..." oninput="updateView()">
 </div>
 
 <div class="map-card" id="mapInfo">
-    <!-- Wird dynamisch gefüllt -->
+    <!-- Dynamisch -->
 </div>
 
-<h2>Mögliche Beute (Drops)</h2>
+<h2>Mögliche Beute (<span id="itemCount">0</span> Drops)</h2>
 <div style="margin-top: 10px;" class="drop-grid" id="dropList">
-    <!-- Drops werden dynamisch geladen -->
+    <!-- Drops -->
 </div>
 
 <script>
@@ -77,44 +77,62 @@ const mapData = {
     rainy: {
         name: "Regen-Ebenen",
         difficulty: "Stufe 1 - 5",
-        description: "Regnerisches Startgebiet mit vielen Sumpf-Gegnern und versteckten Höhlen.",
+        description: "Regnerisches Startgebiet mit vielen Sumpf-Gegnern, Schlammlöchern und versteckten Höhlen.",
         image: "https://images.unsplash.com/photo-1511497584788-876761c11932?w=600&auto=format&fit=crop",
         drops: [
-            { name: "Sumpf-Schwert", type: "Nahkampf", rarity: "common", rate: "35%", effect: "Vergiftet Gegner bei Treffer" },
-            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", rate: "15%", effect: "Erhöhter kritischer Schaden" },
-            { name: "Gift-Amulett", type: "Artefakt", rarity: "unique", rate: "3%", effect: "Erzeugt eine große Giftwolke" }
+            { name: "Sumpf-Schwert", type: "Nahkampf", rarity: "common", rate: "35%", effect: "Vergiftet Gegner bei Treffer." },
+            { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Hohe Angriffsgeschwindigkeit und Giftschaden." },
+            { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", rate: "15%", effect: "Erhöhter kritischer Schaden." },
+            { name: "Sumpf-Rüstung", type: "Rüstung", rarity: "common", rate: "25%", effect: "+15% Giftresistent & +10% Nahkampfschaden." },
+            { name: "Schlamm-Stiefel", type: "Rüstung", rarity: "rare", rate: "10%", effect: "Immunität gegen Verlangsamung im Schlamm." },
+            { name: "Gift-Amulett", type: "Artefakt", rarity: "unique", rate: "3%", effect: "Erzeugt eine große, lang anhaltende Giftwolke." },
+            { name: "Sumpf-Klinge der Schande", type: "Nahkampf", rarity: "unique", rate: "1.5%", effect: "Fügt allen vergifteten Gegnern doppelten Schaden zu." },
+            { name: "Lianen-Peitsche", type: "Nahkampf", rarity: "rare", rate: "8%", effect: "Zieht entfernte Gegner zu dir heran." }
         ]
     },
     meadow: {
         name: "Sänger-Wiese",
         difficulty: "Stufe 4 - 10",
-        description: "Offene Wiesen mit starken Magiern und Sing-Ruinen.",
+        description: "Offene Wiesen mit starken Magiern, verzauberten Kühen und alten Sing-Ruinen.",
         image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop",
         drops: [
-            { name: "Wiegenlied-Klinge", type: "Nahkampf", rarity: "unique", rate: "2.5%", effect: "Schläfert kleine Gegnergruppen ein" },
-            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", rate: "18%", effect: "+20% Schaden für die Gruppe" },
-            { name: "Wind-Horn", type: "Artefakt", rarity: "common", rate: "40%", effect: "Stößt nahe Gegner zurück" }
+            { name: "Wind-Horn", type: "Artefakt", rarity: "common", rate: "40%", effect: "Stößt nahe Gegner zurück und verlangsamt sie." },
+            { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", rate: "18%", effect: "+20% Schaden für die gesamte Gruppe." },
+            { name: "Echo-Klinge", type: "Nahkampf", rarity: "rare", rate: "14%", effect: "Jeder 3. Schlag löst eine Schallwelle aus." },
+            { name: "Wiegenlied-Klinge", type: "Nahkampf", rarity: "unique", rate: "2.5%", effect: "Schläfert kleine Gegnergruppen für 3 Sek. ein." },
+            { name: "Barde-Armbrust", type: "Fernkampf", rarity: "common", rate: "30%", effect: "Verschießt schallverstärkte Bolzen." },
+            { name: "Harpunen-Bogen", type: "Fernkampf", rarity: "unique", rate: "2.0%", effect: "Durchbohrt mehrere Ziele und wirft sie zurück." },
+            { name: "Melodie-Amulett", type: "Artefakt", rarity: "unique", rate: "3.5%", effect: "Erhöht die Laufgeschwindigkeit des Teams um 30%." }
         ]
     },
     frozen: {
         name: "Gefrorenes Hochland",
         difficulty: "Stufe 8 - 15",
-        description: "Eisige Bergpässe mit Rutschgefahr und Eis-Wandlern.",
+        description: "Eisige Bergpässe mit Rutschgefahr, Schneestürmen und Eis-Wandlern.",
         image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop",
         drops: [
-            { name: "Eis-Spitzhacke", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Verlangsamt gegnerisches Bewegungstempo" },
-            { name: "Frost-Bogen", type: "Fernkampf", rarity: "unique", rate: "1.8%", effect: "Friert Ziele für 2 Sekunden ein" },
-            { name: "Schneeball-Artefakt", type: "Artefakt", rarity: "common", rate: "30%", effect: "Schießt automatische Eiskugeln" }
+            { name: "Eis-Spitzhacke", type: "Nahkampf", rarity: "rare", rate: "12%", effect: "Verlangsamt gegnerisches Bewegungstempo." },
+            { name: "Schneeball-Artefakt", type: "Artefakt", rarity: "common", rate: "30%", effect: "Schießt automatische Eiskugeln auf nahe Feinde." },
+            { name: "Frost-Gewand", type: "Rüstung", rarity: "rare", rate: "15%", effect: "Gegner, die dich angreifen, frieren kurz ein." },
+            { name: "Frost-Bogen", type: "Fernkampf", rarity: "unique", rate: "1.8%", effect: "Friert Ziele bei Volltreffer für 2 Sekunden ein." },
+            { name: "Eiszapfen-Speer", type: "Nahkampf", rarity: "rare", rate: "10%", effect: "Hohe Reichweite mit zusätzlichem Frostschaden." },
+            { name: "Gletscher-Spender", type: "Artefakt", rarity: "unique", rate: "2.2%", effect: "Beschwört eine stationäre Eis-Zapfen-Kanone." },
+            { name: "Kaltes Herz", type: "Rüstung", rarity: "unique", rate: "1.2%", effect: "Wandelt 10% des erlittenen Schadens in Eis-Aura um." }
         ]
     },
     huskland: {
         name: "Bescheidenes Ödland",
         difficulty: "Stufe 12 - 20",
-        description: "Gefährliche Wüste voll mit Husk-Zombies und Fallen.",
+        description: "Gefährliche Wüste voll mit Husk-Zombies, Sandstürmen und Treibsand-Fallen.",
         image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop",
         drops: [
-            { name: "Wüsten-Sichel", type: "Nahkampf", rarity: "unique", rate: "2%", effect: "Raubt Leben bei jedem kritischen Treffer" },
-            { name: "Sandsturm-Amulett", type: "Artefakt", rarity: "rare", rate: "10%", effect: "Blendet alle Nahkampf-Angreifer" }
+            { name: "Wüsten-Küstensäbel", type: "Nahkampf", rarity: "common", rate: "28%", effect: "Schnelle Schläge mit Blutungseffekt." },
+            { name: "Wüsten-Sichel", type: "Nahkampf", rarity: "unique", rate: "2.0%", effect: "Raubt Leben bei jedem kritischen Treffer." },
+            { name: "Sandsturm-Amulett", type: "Artefakt", rarity: "rare", rate: "10%", effect: "Blendet alle Nahkampf-Angreifer im Umkreis." },
+            { name: "Pharaonen-Rüstung", type: "Rüstung", rarity: "unique", rate: "1.5%", effect: "Erhöht Seelen-Ausbeute und beschwört Mummy-Helfer." },
+            { name: "Sonnen-Bogen", type: "Fernkampf", rarity: "rare", rate: "14%", effect: "Setzt Ziele in Brand." },
+            { name: "Käfer-Kokon", type: "Artefakt", rarity: "common", rate: "22%", effect: "Beschwört 3 Skarabäen als Ablenkung." },
+            { name: "Kobra-Peitsche", type: "Nahkampf", rarity: "rare", rate: "9%", effect: "Fügt Vergiftung und Blutung gleichzeitig zu." }
         ]
     }
 };
@@ -124,7 +142,6 @@ function updateView() {
     const searchFilter = document.getElementById('searchInput').value.toLowerCase();
     const region = mapData[selectedKey];
     
-    // Karte & Info anzeigen
     document.getElementById('mapInfo').innerHTML = `
         <img class="map-image" src="${region.image}" alt="${region.name}">
         <div class="map-details">
@@ -133,14 +150,16 @@ function updateView() {
         </div>
     `;
     
-    // Drops anzeigen
     const dropContainer = document.getElementById('dropList');
     dropContainer.innerHTML = '';
     
     const filteredDrops = region.drops.filter(item => 
         item.name.toLowerCase().includes(searchFilter) || 
-        item.type.toLowerCase().includes(searchFilter)
+        item.type.toLowerCase().includes(searchFilter) ||
+        item.effect.toLowerCase().includes(searchFilter)
     );
+    
+    document.getElementById('itemCount').innerText = filteredDrops.length;
     
     if(filteredDrops.length === 0) {
         dropContainer.innerHTML = '<p style="color: var(--text-muted);">Keine passenden Gegenstände gefunden.</p>';
@@ -168,7 +187,6 @@ function updateView() {
     });
 }
 
-// Initialer Aufruf
 updateView();
 </script>
 
