@@ -27,9 +27,25 @@
         .section-title { font-size: 1rem; color: #f0883e; margin: 15px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
 
         /* Weltkarte Container mit Pan & Zoom */
-        .map-container { width: 100%; height: 340px; background: #000; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .map-container { width: 100%; height: 340px; background: #000; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; position: relative; }
         .map-wrapper { width: 100%; height: 100%; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center center; position: relative; }
         .map-image { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+        /* Stecknadel (Map Pin) */
+        .map-pin {
+            position: absolute;
+            font-size: 1.8rem;
+            transform: translate(-50%, -100%);
+            display: none;
+            z-index: 10;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));
+            animation: bounce 0.8s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translate(-50%, -100%); }
+            to { transform: translate(-50%, -120%); }
+        }
 
         .reset-map-btn { font-size: 0.75rem; background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
@@ -81,6 +97,7 @@
 <div class="map-container" id="mapContainer">
     <div class="map-wrapper" id="mapWrapper">
         <img src="map.jpg" alt="Minecraft Dungeons Weltkarte" class="map-image">
+        <div class="map-pin" id="mapPin">📍</div>
     </div>
 </div>
 
@@ -91,7 +108,11 @@
     <div class="filter-row">
         <select id="regionSelect" onchange="updateView()">
             <option value="all">Alle Regionen</option>
-            <option value="squid_coast">Squid Coast</option>
+            <option value="brave_haven">Brave Haven</option>
+            <option value="honeycomb_fields">Honeycomb Fields</option>
+            <option value="howling_woods">Howling Woods</option>
+            <option value="frozen_fjords">Frozen Fjords</option>
+            <option value="rainy_plains">Rainy Plains</option>
             <option value="creeper_woods">Creeper Woods</option>
             <option value="soggy_swamp">Soggy Swamp</option>
             <option value="pumpkin_pastures">Pumpkin Pastures</option>
@@ -115,93 +136,109 @@
 <div class="drop-grid" id="dropList"></div>
 
 <script>
-// Koordinaten und Zoom-Daten für alle Regionen auf der Weltkarte
+// Exakte Koordinaten der Regionen auf deinem Original-Bild (Prozentual X / Y)
 const regions = {
-    squid_coast: { name: "Squid Coast", x: "15%", y: "45%", scale: 2.2 },
-    creeper_woods: { name: "Creeper Woods", x: "28%", y: "40%", scale: 2.2 },
-    soggy_swamp: { name: "Soggy Swamp", x: "32%", y: "65%", scale: 2.2 },
-    pumpkin_pastures: { name: "Pumpkin Pastures", x: "42%", y: "35%", scale: 2.2 },
-    cacti_canyon: { name: "Cacti Canyon", x: "50%", y: "55%", scale: 2.2 },
-    redstone_mines: { name: "Redstone Mines", x: "58%", y: "40%", scale: 2.2 },
-    desert_temple: { name: "Desert Temple", x: "65%", y: "60%", scale: 2.2 },
-    fiery_forge: { name: "Fiery Forge", x: "70%", y: "38%", scale: 2.2 },
-    high_block_halls: { name: "High Block Halls", x: "80%", y: "45%", scale: 2.2 },
-    obsidian_pinnacle: { name: "Obsidian Pinnacle", x: "88%", y: "30%", scale: 2.2 }
+    brave_haven: { name: "Brave Haven", x: "10%", y: "38%", scale: 2.5 },
+    honeycomb_fields: { name: "Honeycomb Fields", x: "30%", y: "32%", scale: 2.5 },
+    howling_woods: { name: "Howling Woods", x: "50%", y: "33%", scale: 2.5 },
+    frozen_fjords: { name: "Frozen Fjords / Highlands", x: "80%", y: "28%", scale: 2.5 },
+    rainy_plains: { name: "Rainy Plains", x: "62%", y: "68%", scale: 2.5 },
+    creeper_woods: { name: "Creeper Woods", x: "28%", y: "42%", scale: 2.5 },
+    soggy_swamp: { name: "Soggy Swamp", x: "32%", y: "60%", scale: 2.5 },
+    pumpkin_pastures: { name: "Pumpkin Pastures", x: "42%", y: "35%", scale: 2.5 },
+    cacti_canyon: { name: "Cacti Canyon", x: "52%", y: "55%", scale: 2.5 },
+    redstone_mines: { name: "Redstone Mines", x: "58%", y: "40%", scale: 2.5 },
+    desert_temple: { name: "Desert Temple", x: "65%", y: "60%", scale: 2.5 },
+    fiery_forge: { name: "Fiery Forge", x: "72%", y: "38%", scale: 2.5 },
+    high_block_halls: { name: "High Block Halls", x: "82%", y: "45%", scale: 2.5 },
+    obsidian_pinnacle: { name: "Obsidian Pinnacle", x: "88%", y: "30%", scale: 2.5 }
 };
 
 // Umfassende Minecraft Dungeons Item-Datenbank
 const itemsDB = [
+    // Brave Haven / Honeycomb Fields
+    { name: "Honig-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "honeycomb_fields", effect: "Verlangsamungseffekt bei Treffern." },
+    { name: "Bienen-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐝", region: "honeycomb_fields", effect: "Beschwört Bienen bei erlittenem Schaden." },
+
+    // Howling Woods
+    { name: "Wolfs-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐺", region: "howling_woods", effect: "+20% Waffen-Schadens-Aura für Verbündete." },
+    { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "howling_woods", effect: "Erhöhter kritischer Trefferschaden." },
+    { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "howling_woods", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
+
+    // Frozen Fjords
+    { name: "Eis-Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_fjords", effect: "Verlangsamt nahe Gegner nach Kills." },
+    { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "🔮", region: "frozen_fjords", effect: "Friert Gegner in einem Zielgebiet ein." },
+    { name: "Schnee-Rüstung", type: "Rüstung", rarity: "rare", symbol: "❄️", region: "frozen_fjords", effect: "Schutz vor Verlangsamung und Einfrieren." },
+
+    // Rainy Plains
+    { name: "Blitz-Speer", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", effect: "Erzeugt Blitzeinschläge bei kritischen Treffern." },
+    { name: "Gewitter-Guthaben", type: "Artefakt", rarity: "rare", symbol: "🌩️", region: "rainy_plains", effect: "Ruft Blitze auf mehrere Nahe Gegner." },
+
     // Creeper Woods
     { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "creeper_woods", effect: "Ausgewogene Nahkampfwaffe mit schnellen Hieben." },
-    { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", effect: "Führt einen wuchtigen Rundumschlag aus." },
-    { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", effect: "Erhöhter kritischer Trefferschaden." },
-    { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
-    { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
-    { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "common", symbol: "🎆", effect: "Verwandelt den nächsten Pfeil in eine Explosion." },
-    { name: "Raketen-Stab", type: "Artefakt", rarity: "rare", symbol: "🚀", effect: "Schießt eine explodierende Rakete ab." },
+    { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", region: "creeper_woods", effect: "Führt einen wuchtigen Rundumschlag aus." },
+    { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "creeper_woods", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
+    { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "common", symbol: "🎆", region: "creeper_woods", effect: "Verwandelt den nächsten Pfeil in eine Explosion." },
 
     // Soggy Swamp
-    { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", effect: "Schnelle Doppelangriffe." },
-    { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", symbol: "🗡️", effect: "Hohe Angriffsgeschwindigkeit." },
-    { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
-    { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Verschießt 5 Bolzen gleichzeitig im Fächer." },
-    { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", effect: "Hüllt den Spieler in eine giftige Wolke." },
-    { name: "Seelen-Roben", type: "Rüstung", rarity: "rare", symbol: "🧙‍♂️", effect: "+50% Seelen-Menge, +30% Artefakt-Schaden." },
+    { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "soggy_swamp", effect: "Schnelle Doppelangriffe." },
+    { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", region: "soggy_swamp", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
+    { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "soggy_swamp", effect: "Verschießt 5 Bolzen gleichzeitig im Fächer." },
+    { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", region: "soggy_swamp", effect: "Hüllt den Spieler in eine giftige Wolke." },
 
     // Pumpkin Pastures
-    { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", effect: "Stiehlt Leben von besiegten Gegnern." },
-    { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "-20% erlittener Schaden für das Team." },
-    { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", effect: "Wirft nahe Gegner wirkungsvoll zurück und verlangsamt." },
-    { name: "Schwerer Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", effect: "Hoher Einzelschuss-Schaden mit Durchschlagskraft." },
+    { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", region: "pumpkin_pastures", effect: "Stiehlt Leben von besiegten Gegnern." },
+    { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "pumpkin_pastures", effect: "-20% erlittener Schaden für das Team." },
+    { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", region: "pumpkin_pastures", effect: "Wirft nahe Gegner wirkungsvoll zurück." },
 
     // Cacti Canyon
-    { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", symbol: "⚔️", effect: "Fügt gegnerischen Zielen Blutungsschaden zu." },
-    { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", effect: "Enorm hoher Schaden und erhöhte Pfeilgeschwindigkeit." },
-    { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "+35% allgemeiner Waffenschaden." },
-    { name: "Totem der Regeneration", type: "Artefakt", rarity: "rare", symbol: "💚", effect: "Erschafft eine Heilzone für dich und Verbündete." },
+    { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "cacti_canyon", effect: "Fügt gegnerischen Zielen Blutungsschaden zu." },
+    { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "cacti_canyon", effect: "Enorm hoher Schaden und erhöhte Pfeilgeschwindigkeit." },
+    { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "cacti_canyon", effect: "+35% allgemeiner Waffenschaden." },
 
     // Redstone Mines
-    { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", effect: "Extrem hoher Schaden pro Einzelschlag." },
-    { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern." },
-    { name: "Armbrust", type: "Fernkampf", rarity: "common", symbol: "🏹", effect: "Schnelles Schießen mit hohem Impuls." },
-    { name: "Redstone-Golem-Amulett", type: "Artefakt", rarity: "unique", symbol: "🗿", effect: "Beschwört einen Redstone-Golem im Kampf." },
+    { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", region: "redstone_mines", effect: "Extrem hoher Schaden pro Einzelschlag." },
+    { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", region: "redstone_mines", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern." },
+    { name: "Redstone-Golem-Amulett", type: "Artefakt", rarity: "unique", symbol: "🗿", region: "redstone_mines", effect: "Beschwört einen Redstone-Golem im Kampf." },
 
     // Desert Temple
-    { name: "Glaive", type: "Nahkampf", rarity: "rare", symbol: "🔱", effect: "Erreicht Gegner aus hoher Distanz." },
-    { name: "Grave Bane", type: "Nahkampf", rarity: "unique", symbol: "🔱", effect: "Fügt Untoten massiven Zusatzschaden zu." },
-    { name: "Grimm-Rüstung", type: "Rüstung", rarity: "rare", symbol: "💀", effect: "Lebensraub auf allen verursachten Schaden." },
+    { name: "Glaive", type: "Nahkampf", rarity: "rare", symbol: "🔱", region: "desert_temple", effect: "Erreicht Gegner aus hoher Distanz." },
+    { name: "Grave Bane", type: "Nahkampf", rarity: "unique", symbol: "🔱", region: "desert_temple", effect: "Fügt Untoten massiven Zusatzschaden zu." },
 
     // Fiery Forge
-    { name: "Großschwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", effect: "Langsame, aber verheerende Schläge." },
-    { name: "Verstärkte Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", effect: "35% Schadensreduktion, Chance auf Schadensreflexion." },
-    { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "❄️", effect: "Friert Gegner in einem Zielgebiet ein." },
-
-    // High Block Halls
-    { name: "Morgenstern", type: "Nahkampf", rarity: "rare", symbol: "🔨", effect: "Fügt Bereichsschaden und Betäubung zu." },
-    { name: "Axt des Henkers", type: "Nahkampf", rarity: "unique", symbol: "🪓", effect: "Kritische Treffer erzeugen eine Schockwelle." },
+    { name: "Großschwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "fiery_forge", effect: "Langsame, aber verheerende Schläge." },
+    { name: "Verstärkte Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "fiery_forge", effect: "35% Schadensreduktion." },
 
     // Obsidian Pinnacle
-    { name: "Katana", type: "Nahkampf", rarity: "rare", symbol: "⚔️", effect: "Extrem schnelle Schnittkombo." },
-    { name: "Meister-Katana", type: "Nahkampf", rarity: "unique", symbol: "⚔️", effect: "Hohe Chance auf kritische Treffer mit Max-Schaden." },
-    { name: "Dunkle Rüstung", type: "Rüstung", rarity: "unique", symbol: "🖤", effect: "+30% Nahkampfschaden, +50% Seelen-Ausbeute." }
+    { name: "Katana", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "obsidian_pinnacle", effect: "Extrem schnelle Schnittkombo." },
+    { name: "Meister-Katana", type: "Nahkampf", rarity: "unique", symbol: "⚔️", region: "obsidian_pinnacle", effect: "Hohe Chance auf kritische Treffer mit Max-Schaden." }
 ];
 
 function focusRegion(regionKey) {
     const wrapper = document.getElementById('mapWrapper');
+    const pin = document.getElementById('mapPin');
     const region = regions[regionKey];
     
     if (region) {
+        // Stecknadel genau an die Koordinaten der Region setzen
+        pin.style.left = region.x;
+        pin.style.top = region.y;
+        pin.style.display = 'block';
+
+        // Zoom & Pan auf die Koordinaten
         wrapper.style.transform = `scale(${region.scale}) translate(calc(50% - ${region.x}), calc(50% - ${region.y}))`;
     } else {
         resetMap();
     }
 
-    // Sanftes Scrollen nach oben zur Karte
+    // Nach oben zur Karte scrollen
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetMap() {
     const wrapper = document.getElementById('mapWrapper');
+    const pin = document.getElementById('mapPin');
+    pin.style.display = 'none';
     wrapper.style.transform = 'scale(1) translate(0px, 0px)';
 }
 
@@ -250,7 +287,7 @@ function updateView() {
                 </div>
                 <div class="item-info"><strong>Typ:</strong> ${item.type}</div>
                 <div class="item-effect">${item.effect}</div>
-                <div class="location-badge">📍 ${regionInfo} (Tippen zum Zoomen)</div>
+                <div class="location-badge">📍 Fundort: ${regionInfo} (Tippen für Pin)</div>
             </div>
         `;
         dropContainer.appendChild(card);
