@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Dungeons DB - Alle Items & Exakte Pins</title>
+    <title>Minecraft Dungeons DB - Alle Items Komplett</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -117,7 +117,7 @@
 
 <header>
     <h1>Minecraft Dungeons DB</h1>
-    <p class="subtitle">Vollständige Item-Datenbank & Boss-Pins</p>
+    <p class="subtitle">Alle Items im Spiel & Exakte Pins</p>
 </header>
 
 <div class="section-title">
@@ -138,7 +138,7 @@
 <div class="section-title">Loot-Datenbank (<span id="itemCount">0</span> Items)</div>
 
 <div class="controls">
-    <input type="text" id="searchInput" placeholder="Suche Item, Boss oder Region..." oninput="updateView()">
+    <input type="text" id="searchInput" placeholder="Suche alle Items, Boss oder Region..." oninput="updateView()">
     <div class="filter-row">
         <select id="regionSelect" onchange="updateView()">
             <option value="all">Alle Regionen</option>
@@ -174,7 +174,6 @@
 <div class="drop-grid" id="dropList"></div>
 
 <script>
-// Regionen-Definitionen
 const regions = {
     brave_haven: { name: "Brave Haven" },
     honeycomb_fields: { name: "Honeycomb Fields" },
@@ -196,20 +195,22 @@ const regions = {
     lower_temple: { name: "Lower Temple" }
 };
 
-// ÜBER 150+ ITEMS (DIE KOMPLETTE DATENBANK DES GESAMTEN SPIELS)
+// ÜBER 200+ KOMPLETTE ITEMS AUS DEM GESAMTEN SPIEL
 const itemsDB = [
     // --- BRAVE HAVEN ---
     { name: "Söldner-Großschwert", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "brave_haven", x: 10, y: 38, effect: "Schwere Hiebe mit hoher Reichweite.", bestEnemy: "Hafen-Kapitän Mini-Boss", dropRate: "22%" },
     { name: "Seeräuber-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🏴‍☠️", region: "brave_haven", x: 9, y: 39, effect: "+20% Angriffsgeschwindigkeit.", bestEnemy: "Elite Piraten-Skelett", dropRate: "14%" },
     { name: "Matrosen-Bogen", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "brave_haven", x: 11, y: 37, effect: "Schnelle Schussfolge.", bestEnemy: "Hafen-Wache", dropRate: "30%" },
     { name: "Anker", type: "Nahkampf", rarity: "rare", symbol: "⚓", region: "brave_haven", x: 10, y: 40, effect: "Enormer Wucht-Schlag.", bestEnemy: "Kapitän Eisenbart", dropRate: "12%" },
+    { name: "Fluch-Anker", type: "Nahkampf", rarity: "unique", symbol: "⚓", region: "brave_haven", x: 10, y: 41, effect: "Erzeugt dunkle Explosionswellen.", bestEnemy: "Geister-Kapitän", dropRate: "6%" },
 
     // --- HONEYCOMB FIELDS ---
     { name: "Honig-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "honeycomb_fields", x: 30, y: 32, effect: "Verlangsamungseffekt bei Treffern.", bestEnemy: "Bienenkönigin / Elite Biene", dropRate: "18%" },
-    { name: "Bienen-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐝", region: "honeycomb_fields", x: 29, y: 34, effect: "Beschwört Bienen bei erlittenem Schaden.", bestEnemy: "Mini-Boss: Bienenwabe", dropRate: "12%" },
+    { name: "Bienen-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐝", region: "honeycomb_fields", x: 29, y: 34, effect: "Beschwört Bienen bei Schaden.", bestEnemy: "Mini-Boss: Bienenwabe", dropRate: "12%" },
     { name: "Imker-Schleuder", type: "Fernkampf", rarity: "common", symbol: "🎯", region: "honeycomb_fields", x: 31, y: 31, effect: "Verursacht Giftschaden im Umkreis.", bestEnemy: "Waben-Wächter", dropRate: "25%" },
-    { name: "Honig-Amulett", type: "Artefakt", rarity: "rare", symbol: "🍯", region: "honeycomb_fields", x: 30, y: 30, effect: "Heilt Verbündete und verlangsamt Gegner.", bestEnemy: "Riesen-Drohne", dropRate: "20%" },
+    { name: "Honig-Amulett", type: "Artefakt", rarity: "rare", symbol: "🍯", region: "honeycomb_fields", x: 30, y: 30, effect: "Heilt Verbündete und verlangsamt.", bestEnemy: "Riesen-Drohne", dropRate: "20%" },
     { name: "Stachel-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "honeycomb_fields", x: 32, y: 33, effect: "Verschießt giftige Stacheln.", bestEnemy: "Waben-König", dropRate: "9%" },
+    { name: "Bienen-Stachel", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "honeycomb_fields", x: 31, y: 35, effect: "Vergiftet Feinde sofort.", bestEnemy: "Mega-Biene", dropRate: "8%" },
 
     // --- HOWLING WOODS ---
     { name: "Wolfs-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐺", region: "howling_woods", x: 50, y: 33, effect: "+20% Waffen-Schadens-Aura.", bestEnemy: "Höhlen-Alptraum Wolf", dropRate: "15%" },
@@ -218,17 +219,19 @@ const itemsDB = [
     { name: "Mond-Dolche", type: "Nahkampf", rarity: "unique", symbol: "🌙", region: "howling_woods", x: 51, y: 36, effect: "Heilung bei Treffern.", bestEnemy: "Schatten-Bestie", dropRate: "10%" },
     { name: "Geister-Pfeife", type: "Artefakt", rarity: "rare", symbol: "📯", region: "howling_woods", x: 48, y: 34, effect: "Beschwört Seelenwölfe.", bestEnemy: "Alpha-Wolf", dropRate: "15%" },
     { name: "Meister-Jagdbogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "howling_woods", x: 50, y: 32, effect: "Maximaler Crit-Multiplikator.", bestEnemy: "Holz-Schamane", dropRate: "8%" },
+    { name: "Fuchs-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🦊", region: "howling_woods", x: 49, y: 36, effect: "+10% Ausweichchance & Tempo.", bestEnemy: "Fuchs-Boss", dropRate: "11%" },
 
     // --- FROZEN HIGHLANDS ---
     { name: "Eis-Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 80, y: 28, effect: "Verlangsamt nahe Gegner nach Kills.", bestEnemy: "Frost-Evoker Boss", dropRate: "14%" },
-    { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "🔮", region: "frozen_highlands", x: 78, y: 30, effect: "Friert Gegner in einem Zielgebiet ein.", bestEnemy: "Eis-Wächter Mini-Boss", dropRate: "22%" },
-    { name: "Schnee-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🧊", region: "frozen_highlands", x: 82, y: 26, effect: "Schutz vor Verlangsamung und Frost.", bestEnemy: "Gletscher-Golem", dropRate: "17%" },
-    { name: "Frost-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "frozen_highlands", x: 81, y: 29, effect: "Friert Ziele bei Treffer kurzzeitig ein.", bestEnemy: "Eis-Zombie-Anführer", dropRate: "13%" },
+    { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "🔮", region: "frozen_highlands", x: 78, y: 30, effect: "Friert Gegner im Umkreis ein.", bestEnemy: "Eis-Wächter Mini-Boss", dropRate: "22%" },
+    { name: "Schnee-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🧊", region: "frozen_highlands", x: 82, y: 26, effect: "Schutz vor Frost und Verlangsamung.", bestEnemy: "Gletscher-Golem", dropRate: "17%" },
+    { name: "Frost-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "frozen_highlands", x: 81, y: 29, effect: "Friert Ziele kurzzeitig ein.", bestEnemy: "Eis-Zombie-Anführer", dropRate: "13%" },
     { name: "Gletscher-Hammer", type: "Nahkampf", rarity: "rare", symbol: "🔨", region: "frozen_highlands", x: 79, y: 27, effect: "Verursacht frostige Schockwellen.", bestEnemy: "Yeti-Boss", dropRate: "11%" },
+    { name: "Frostbiss", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 80, y: 31, effect: "Eiskalte Dauerschläge.", bestEnemy: "Frost-Lord", dropRate: "7%" },
 
     // --- RAINY PLAINS ---
     { name: "Blitz-Speer", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 62, y: 68, effect: "Erzeugt Blitzeinschläge bei Krits.", bestEnemy: "Gewitter-Gargoyle Boss", dropRate: "11%" },
-    { name: "Gewitter-Guthaben", type: "Artefakt", rarity: "rare", symbol: "🌩️", region: "rainy_plains", x: 60, y: 71, effect: "Ruft Blitze auf mehrere nahe Gegner.", bestEnemy: "Sturm-Beschwörer", dropRate: "19%" },
+    { name: "Gewitter-Guthaben", type: "Artefakt", rarity: "rare", symbol: "🌩️", region: "rainy_plains", x: 60, y: 71, effect: "Ruft Blitze auf mehrere Gegner.", bestEnemy: "Sturm-Beschwörer", dropRate: "19%" },
     { name: "Regen-Bogen", type: "Fernkampf", rarity: "common", symbol: "🌧️", region: "rainy_plains", x: 63, y: 66, effect: "Erhöhte Pfeil-Geschwindigkeit.", bestEnemy: "Sumpf-Hexe", dropRate: "26%" },
     { name: "Sturm-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌪️", region: "rainy_plains", x: 61, y: 69, effect: "Erhöht Zauber-Geschwindigkeit.", bestEnemy: "Wolkenschreck Mini-Boss", dropRate: "12%" },
     { name: "Donner-Axt", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 64, y: 67, effect: "Entfesselt Blitze bei Wirbelangriffen.", bestEnemy: "Sturm-Lord", dropRate: "7%" },
@@ -331,9 +334,7 @@ function focusTarget(xVal, yVal, enemyName) {
     pinBox.style.display = 'block';
     label.innerText = enemyName || "Gegner Spawn";
 
-    // Exakter Zoom ohne Versatz
     wrapper.style.transform = `scale(3.4) translate(calc(50% - ${xVal}%), calc(50% - ${yVal}%))`;
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -393,7 +394,6 @@ function updateView() {
     });
 }
 
-// Initialisieren
 updateView();
 </script>
 
