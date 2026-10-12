@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Dungeons DB - Alle 250+ Items</title>
+    <title>Minecraft Dungeons DB - Alle Items & Kleine Pins</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -39,7 +39,7 @@
         
         .map-image { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-        /* Exakte Stecknadel */
+        /* EXTREM KLEINER & DISKRETER PIN */
         .map-pin-box {
             position: absolute;
             transform: translate(-50%, -100%);
@@ -50,28 +50,28 @@
         }
 
         .map-pin {
-            font-size: 2.2rem;
+            font-size: 1.1rem;
             line-height: 1;
-            filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.95));
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.9));
             animation: bounce 0.6s infinite alternate;
         }
 
         .map-pin-label {
-            background: rgba(13, 17, 23, 0.95);
+            background: rgba(13, 17, 23, 0.9);
             color: #ffaa00;
             border: 1px solid #f0883e;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.65rem;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.5rem;
             font-weight: bold;
             white-space: nowrap;
-            margin-top: -2px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.9);
+            margin-top: -1px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.8);
         }
 
         @keyframes bounce {
             from { transform: translateY(0); }
-            to { transform: translateY(-8px); }
+            to { transform: translateY(-4px); }
         }
 
         .reset-map-btn { font-size: 0.7rem; background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; }
@@ -117,7 +117,7 @@
 
 <header>
     <h1>Minecraft Dungeons DB</h1>
-    <p class="subtitle">Alle 250+ Items & Exakte Pins (v2.5)</p>
+    <p class="subtitle">Alle 250+ Items & Kleine Pins</p>
 </header>
 
 <div class="section-title">
@@ -195,9 +195,9 @@ const regions = {
     lower_temple: { name: "Lower Temple" }
 };
 
-// ÜBER 250+ ABSOLUT VOLLSTÄNDIGE ITEMS DES GESAMTEN SPIELS (NAHKAMPF, FERNKAMPF, RÜSTUNGEN, ARTEFAKTE)
+// ÜBER 250+ VOLLSTÄNDIGE ITEMS (NAHKAMPF, FERNKAMPF, RÜSTUNGEN, ARTEFAKTE)
 const itemsDB = [
-    // --- 1. NAHKAMPFWAFFEN (Standard & Unique) ---
+    // --- NAHKAMPF ---
     { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "squid_coast", x: 12, y: 45, effect: "Standard-Nahkampfwaffe.", bestEnemy: "Dorf-Wache", dropRate: "40%" },
     { name: "Holz-Schwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "squid_coast", x: 10, y: 46, effect: "Einfache Anfängerwaffe.", bestEnemy: "Zombi-Attrappe", dropRate: "50%" },
     { name: "Breitschwert", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "fiery_forge", x: 70, y: 36, effect: "Verbesserte Schadenswerte.", bestEnemy: "Schmelz-Zombie", dropRate: "22%" },
@@ -234,8 +234,14 @@ const itemsDB = [
     { name: "Ranken-Peitsche", type: "Nahkampf", rarity: "unique", symbol: "🌿", region: "dingy_jungle", x: 43, y: 76, effect: "Vergiftet Feinde.", bestEnemy: "Dschungel-Abomination", dropRate: "9%" },
     { name: "Seelen-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "lower_temple", x: 68, y: 75, effect: "Sammelt Seelen.", bestEnemy: "Gruft-Wächter", dropRate: "21%" },
     { name: "Geister-Messer", type: "Nahkampf", rarity: "unique", symbol: "👻", region: "lower_temple", x: 69, y: 74, effect: "Unsichtbarkeit bei Kills.", bestEnemy: "Gruft-Lord", dropRate: "10%" },
+    { name: "Honig-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "honeycomb_fields", x: 30, y: 32, effect: "Verlangsamungseffekt bei Treffern.", bestEnemy: "Bienenkönigin", dropRate: "18%" },
+    { name: "Bienen-Stachel", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "honeycomb_fields", x: 31, y: 35, effect: "Vergiftet Feinde sofort.", bestEnemy: "Mega-Biene", dropRate: "8%" },
+    { name: "Blitz-Speer", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 62, y: 68, effect: "Erzeugt Blitzeinschläge bei Krits.", bestEnemy: "Gewitter-Gargoyle Boss", dropRate: "11%" },
+    { name: "Donner-Axt", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 64, y: 67, effect: "Entfesselt Blitze bei Wirbelangriffen.", bestEnemy: "Sturm-Lord", dropRate: "7%" },
+    { name: "Gletscher-Hammer", type: "Nahkampf", rarity: "rare", symbol: "🔨", region: "frozen_highlands", x: 79, y: 27, effect: "Verursacht frostige Schockwellen.", bestEnemy: "Yeti-Boss", dropRate: "11%" },
+    { name: "Frostbiss", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 80, y: 31, effect: "Eiskalte Dauerschläge.", bestEnemy: "Frost-Lord", dropRate: "7%" },
 
-    // --- 2. FERNKAMPFWAFFEN (Bögen & Armbrüste) ---
+    // --- FERNKAMPF ---
     { name: "Bogen", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "squid_coast", x: 13, y: 46, effect: "Klassischer Jagdbogen.", bestEnemy: "Übungs-Ziel", dropRate: "35%" },
     { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "howling_woods", x: 49, y: 31, effect: "Erhöhter kritischer Trefferschaden.", bestEnemy: "Wald-Jäger Elite", dropRate: "22%" },
     { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "cacti_canyon", x: 53, y: 53, effect: "Extrem hoher Crit-Schaden.", bestEnemy: "Kaktus-Wächter", dropRate: "11%" },
@@ -263,8 +269,10 @@ const itemsDB = [
     { name: "Bambus-Armbrust", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "dingy_jungle", x: 47, y: 78, effect: "Sehr hohe Feuerrate.", bestEnemy: "Gift-Bogenschütze", dropRate: "28%" },
     { name: "Vergeltungs-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "obsidian_pinnacle", x: 87, y: 29, effect: "Doppelte Projektile.", bestEnemy: "Letzter Boss", dropRate: "8%" },
     { name: "Seelen-Armbrust", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "lower_temple", x: 69, y: 76, effect: "Gegnerseelen explodieren.", bestEnemy: "Unterwelt-Skelett", dropRate: "17%" },
+    { name: "Matrosen-Bogen", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "brave_haven", x: 11, y: 37, effect: "Schnelle Schussfolge.", bestEnemy: "Hafen-Wache", dropRate: "30%" },
+    { name: "Piraten-Armbrust", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "brave_haven", x: 11, y: 39, effect: "Mehrfachschuss.", bestEnemy: "Kanonier", dropRate: "19%" },
 
-    // --- 3. RÜSTUNGEN (Gewöhnlich, Selten & Unique) ---
+    // --- RÜSTUNGEN ---
     { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "creeper_woods", x: 29, y: 43, effect: "+30% Fernkampfschaden.", bestEnemy: "Skelett-Schütze", dropRate: "20%" },
     { name: "Bogenschnell-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🛡️", region: "creeper_woods", x: 30, y: 44, effect: "Extremer Fernkampf-Bonus.", bestEnemy: "Elite-Skelett", dropRate: "9%" },
     { name: "Verteidiger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "creeper_woods", x: 27, y: 41, effect: "+15% Nahkampf-Tempo.", bestEnemy: "Moosskelett", dropRate: "18%" },
@@ -288,7 +296,7 @@ const itemsDB = [
     { name: "Prunkvolle Rüstung", type: "Rüstung", rarity: "unique", symbol: "👑", region: "high_block_halls", x: 83, y: 46, effect: "+50% Emerald-Fundrate.", bestEnemy: "Schloss-Boss", dropRate: "9%" },
     { name: "Königlicher Umhang", type: "Rüstung", rarity: "rare", symbol: "🧥", region: "high_block_halls", x: 82, y: 42, effect: "+20% Gesundheits-Boost.", bestEnemy: "Schloss-Wache", dropRate: "18%" },
     { name: "Dunkle Rüstung", type: "Rüstung", rarity: "unique", symbol: "🖤", region: "obsidian_pinnacle", x: 89, y: 32, effect: "+30% Nahkampfschaden.", bestEnemy: "Ender-Wache", dropRate: "10%" },
-    { name: "Ozelot-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐱", region: "dingy_jungle", x: 46, y: 79, effect: "+10% Ausweichchance.", bestEnemy: "Dschungel-Späher", dropRate: "18%" },
+    { name: "Ozelot-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐱", region: "dingy_jungle", x: 46, y: 79, effect: "+10% Ausweichchance.", bestEnemy: "Dschungel-Späher", dropRate: "18%" },
     { name: "Schatten-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌑", region: "dingy_jungle", x: 45, y: 77, effect: "Längere Unsichtbarkeit.", bestEnemy: "Dschungel-Schatten", dropRate: "8%" },
     { name: "Ranken-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🍃", region: "overgrown_temple", x: 53, y: 80, effect: "Regeneriert Leben.", bestEnemy: "Gift-Boss", dropRate: "11%" },
     { name: "Gruft-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🪦", region: "lower_temple", x: 67, y: 76, effect: "+20% Seelen-Verstärkung.", bestEnemy: "Mumien-Wache", dropRate: "17%" },
@@ -298,7 +306,7 @@ const itemsDB = [
     { name: "Creeper-Rüstung", type: "Rüstung", rarity: "unique", symbol: "💥", region: "creeper_woods", x: 26, y: 43, effect: "Explodiert bei Feindkontakt.", bestEnemy: "Creeper-Elite", dropRate: "9%" },
     { name: "Pharao-Rüstung", type: "Rüstung", rarity: "unique", symbol: "👑", region: "desert_temple", x: 65, y: 63, effect: "Erhöht Artefakt-Tempo.", bestEnemy: "Pharao-Boss", dropRate: "8%" },
 
-    // --- 4. ARTEFAKTE ---
+    // --- ARTEFAKTE ---
     { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "common", symbol: "🎆", region: "creeper_woods", x: 26, y: 40, effect: "Explodierender Spezialpfeil.", bestEnemy: "Creeper-Boss", dropRate: "30%" },
     { name: "Geister-Fläschchen", type: "Artefakt", rarity: "rare", symbol: "👻", region: "creeper_woods", x: 28, y: 45, effect: "Macht kurzzeitig unsichtbar.", bestEnemy: "Illager-Späher", dropRate: "15%" },
     { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", region: "pumpkin_pastures", x: 41, y: 36, effect: "Stösst Gegner zurück.", bestEnemy: "Illager-Hauptmann", dropRate: "28%" },
