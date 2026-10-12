@@ -34,17 +34,32 @@
         /* Stecknadel (Map Pin) */
         .map-pin {
             position: absolute;
-            font-size: 1.8rem;
+            font-size: 2rem;
             transform: translate(-50%, -100%);
             display: none;
             z-index: 10;
-            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));
+            filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.9));
             animation: bounce 0.8s infinite alternate;
+        }
+
+        .map-pin-label {
+            position: absolute;
+            background: rgba(13, 17, 23, 0.95);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            white-space: nowrap;
+            transform: translate(-50%, -190%);
+            display: none;
+            z-index: 11;
         }
 
         @keyframes bounce {
             from { transform: translate(-50%, -100%); }
-            to { transform: translate(-50%, -120%); }
+            to { transform: translate(-50%, -125%); }
         }
 
         .reset-map-btn { font-size: 0.75rem; background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; }
@@ -79,6 +94,10 @@
         .item-info { font-size: 0.75rem; color: var(--text-muted); }
         .item-effect { font-size: 0.8rem; color: #ddd; }
 
+        .boss-info-box { background: rgba(0,0,0,0.3); border: 1px solid #30363d; padding: 4px 8px; border-radius: 4px; margin-top: 4px; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .boss-name { color: #ff5555; font-weight: bold; }
+        .drop-rate { color: #55ff55; font-weight: bold; }
+
         .location-badge { font-size: 0.75rem; color: var(--accent-gold); font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; }
     </style>
 </head>
@@ -86,7 +105,7 @@
 
 <header>
     <h1>Minecraft Dungeons DB</h1>
-    <p class="subtitle">Weltkarte & Vollständige Loot-Datenbank</p>
+    <p class="subtitle">Weltkarte, Boss-Drops & Exakte Stecknadeln</p>
 </header>
 
 <div class="section-title">
@@ -98,13 +117,14 @@
     <div class="map-wrapper" id="mapWrapper">
         <img src="map.jpg" alt="Minecraft Dungeons Weltkarte" class="map-image">
         <div class="map-pin" id="mapPin">📍</div>
+        <div class="map-pin-label" id="mapPinLabel">Boss Spawnpunkt</div>
     </div>
 </div>
 
 <div class="section-title">Loot-Datenbank (<span id="itemCount">0</span> Items)</div>
 
 <div class="controls">
-    <input type="text" id="searchInput" placeholder="Item, Effekt oder Region suchen..." oninput="updateView()">
+    <input type="text" id="searchInput" placeholder="Item, Boss, Effekt oder Region suchen..." oninput="updateView()">
     <div class="filter-row">
         <select id="regionSelect" onchange="updateView()">
             <option value="all">Alle Regionen</option>
@@ -136,7 +156,7 @@
 <div class="drop-grid" id="dropList"></div>
 
 <script>
-// Exakte Koordinaten der Regionen auf deinem Original-Bild (Prozentual X / Y)
+// Exakte Koordinaten der Regionen & Boss-Spawns auf deinem Karten-Bild (X / Y)
 const regions = {
     brave_haven: { name: "Brave Haven", x: "10%", y: "38%", scale: 2.5 },
     honeycomb_fields: { name: "Honeycomb Fields", x: "30%", y: "32%", scale: 2.5 },
@@ -154,78 +174,65 @@ const regions = {
     obsidian_pinnacle: { name: "Obsidian Pinnacle", x: "88%", y: "30%", scale: 2.5 }
 };
 
-// Umfassende Minecraft Dungeons Item-Datenbank
+// Item-Datenbank inkl. bestem Gegnerspawn & Höchster Drop-Chance
 const itemsDB = [
-    // Brave Haven / Honeycomb Fields
-    { name: "Honig-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "honeycomb_fields", effect: "Verlangsamungseffekt bei Treffern." },
-    { name: "Bienen-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐝", region: "honeycomb_fields", effect: "Beschwört Bienen bei erlittenem Schaden." },
+    // Honeycomb Fields
+    { name: "Honig-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "honeycomb_fields", effect: "Verlangsamungseffekt bei Treffern.", bestEnemy: "Bienenkönigin / Elite Biene", dropRate: "18%" },
+    { name: "Bienen-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐝", region: "honeycomb_fields", effect: "Beschwört Bienen bei erlittenem Schaden.", bestEnemy: "Mini-Boss: Bienenwabe", dropRate: "12%" },
 
     // Howling Woods
-    { name: "Wolfs-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐺", region: "howling_woods", effect: "+20% Waffen-Schadens-Aura für Verbündete." },
-    { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "howling_woods", effect: "Erhöhter kritischer Trefferschaden." },
-    { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "howling_woods", effect: "Fügt zusätzlich Giftschaden über Zeit zu." },
+    { name: "Wolfs-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐺", region: "howling_woods", effect: "+20% Waffen-Schadens-Aura für Verbündete.", bestEnemy: "Höhlen-Alptraum Wolf", dropRate: "15%" },
+    { name: "Sumpf-Klinge", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "howling_woods", effect: "Fügt zusätzlich Giftschaden über Zeit zu.", bestEnemy: "Skelett-Monomaniac", dropRate: "10%" },
 
     // Frozen Fjords
-    { name: "Eis-Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_fjords", effect: "Verlangsamt nahe Gegner nach Kills." },
-    { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "🔮", region: "frozen_fjords", effect: "Friert Gegner in einem Zielgebiet ein." },
-    { name: "Schnee-Rüstung", type: "Rüstung", rarity: "rare", symbol: "❄️", region: "frozen_fjords", effect: "Schutz vor Verlangsamung und Einfrieren." },
+    { name: "Eis-Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_fjords", effect: "Verlangsamt nahe Gegner nach Kills.", bestEnemy: "Frost-Evoker Boss", dropRate: "14%" },
+    { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "🔮", region: "frozen_fjords", effect: "Friert Gegner in einem Zielgebiet ein.", bestEnemy: "Eis-Wächter", dropRate: "22%" },
 
     // Rainy Plains
-    { name: "Blitz-Speer", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", effect: "Erzeugt Blitzeinschläge bei kritischen Treffern." },
-    { name: "Gewitter-Guthaben", type: "Artefakt", rarity: "rare", symbol: "🌩️", region: "rainy_plains", effect: "Ruft Blitze auf mehrere Nahe Gegner." },
+    { name: "Blitz-Speer", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", effect: "Erzeugt Blitzeinschläge bei kritischen Treffern.", bestEnemy: "Gewitter-Gargoyle", dropRate: "11%" },
 
     // Creeper Woods
-    { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "creeper_woods", effect: "Ausgewogene Nahkampfwaffe mit schnellen Hieben." },
-    { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", region: "creeper_woods", effect: "Führt einen wuchtigen Rundumschlag aus." },
-    { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "creeper_woods", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität." },
-    { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "common", symbol: "🎆", region: "creeper_woods", effect: "Verwandelt den nächsten Pfeil in eine Explosion." },
+    { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "creeper_woods", effect: "Ausgewogene Nahkampfwaffe mit schnellen Hieben.", bestEnemy: "Zombie-Anführer", dropRate: "35%" },
+    { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "creeper_woods", effect: "+30% Fernkampfschaden, +20% Pfeil-Kapazität.", bestEnemy: "Skelett-Schütze Elite", dropRate: "20%" },
+    { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "common", symbol: "🎆", region: "creeper_woods", effect: "Verwandelt den nächsten Pfeil in eine Explosion.", bestEnemy: "Creeper-König (Ende)", dropRate: "28%" },
 
     // Soggy Swamp
-    { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "soggy_swamp", effect: "Schnelle Doppelangriffe." },
-    { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", region: "soggy_swamp", effect: "Vergiftet Gegner garantiert bei jedem Treffer." },
-    { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "soggy_swamp", effect: "Verschießt 5 Bolzen gleichzeitig im Fächer." },
-    { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", region: "soggy_swamp", effect: "Hüllt den Spieler in eine giftige Wolke." },
+    { name: "Giftschwert", type: "Nahkampf", rarity: "unique", symbol: "🧪", region: "soggy_swamp", effect: "Vergiftet Gegner garantiert bei jedem Treffer.", bestEnemy: "Sumpf-Hexenmeister / Hexen", dropRate: "12%" },
+    { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "soggy_swamp", effect: "Verschießt 5 Bolzen gleichzeitig im Fächer.", bestEnemy: "Sumpf-Klotz (Hauptboss)", dropRate: "15%" },
 
     // Pumpkin Pastures
-    { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", region: "pumpkin_pastures", effect: "Stiehlt Leben von besiegten Gegnern." },
-    { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "pumpkin_pastures", effect: "-20% erlittener Schaden für das Team." },
-    { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", region: "pumpkin_pastures", effect: "Wirft nahe Gegner wirkungsvoll zurück." },
+    { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", region: "pumpkin_pastures", effect: "Stiehlt Leben von besiegten Gegnern.", bestEnemy: "Evoker (Beschwörer Boss)", dropRate: "14%" },
+    { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "pumpkin_pastures", effect: "-20% erlittener Schaden für das Team.", bestEnemy: "Kürbis-Ritter Mini-Boss", dropRate: "25%" },
 
     // Cacti Canyon
-    { name: "Wüsten-Säbel", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "cacti_canyon", effect: "Fügt gegnerischen Zielen Blutungsschaden zu." },
-    { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "cacti_canyon", effect: "Enorm hoher Schaden und erhöhte Pfeilgeschwindigkeit." },
-    { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "cacti_canyon", effect: "+35% allgemeiner Waffenschaden." },
+    { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "cacti_canyon", effect: "Enorm hoher Schaden und erhöhte Pfeilgeschwindigkeit.", bestEnemy: "Kaktus-Wächter Boss", dropRate: "13%" },
 
     // Redstone Mines
-    { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", region: "redstone_mines", effect: "Extrem hoher Schaden pro Einzelschlag." },
-    { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", region: "redstone_mines", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern." },
-    { name: "Redstone-Golem-Amulett", type: "Artefakt", rarity: "unique", symbol: "🗿", region: "redstone_mines", effect: "Beschwört einen Redstone-Golem im Kampf." },
-
-    // Desert Temple
-    { name: "Glaive", type: "Nahkampf", rarity: "rare", symbol: "🔱", region: "desert_temple", effect: "Erreicht Gegner aus hoher Distanz." },
-    { name: "Grave Bane", type: "Nahkampf", rarity: "unique", symbol: "🔱", region: "desert_temple", effect: "Fügt Untoten massiven Zusatzschaden zu." },
-
-    // Fiery Forge
-    { name: "Großschwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "fiery_forge", effect: "Langsame, aber verheerende Schläge." },
-    { name: "Verstärkte Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "fiery_forge", effect: "35% Schadensreduktion." },
+    { name: "Redstone-Klinge", type: "Nahkampf", rarity: "unique", symbol: "💎", region: "redstone_mines", effect: "Erzeugt kleine Redstone-Explosionen bei Treffern.", bestEnemy: "Redstone-Monstrosität", dropRate: "10%" },
+    { name: "Redstone-Golem-Amulett", type: "Artefakt", rarity: "unique", symbol: "🗿", region: "redstone_mines", effect: "Beschwört einen Redstone-Golem im Kampf.", bestEnemy: "Redstone-Golem Boss", dropRate: "16%" },
 
     // Obsidian Pinnacle
-    { name: "Katana", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "obsidian_pinnacle", effect: "Extrem schnelle Schnittkombo." },
-    { name: "Meister-Katana", type: "Nahkampf", rarity: "unique", symbol: "⚔️", region: "obsidian_pinnacle", effect: "Hohe Chance auf kritische Treffer mit Max-Schaden." }
+    { name: "Meister-Katana", type: "Nahkampf", rarity: "unique", symbol: "⚔️", region: "obsidian_pinnacle", effect: "Hohe Chance auf kritische Treffer mit Max-Schaden.", bestEnemy: "Erz-Illager / Herz des Ender", dropRate: "8%" }
 ];
 
-function focusRegion(regionKey) {
+function focusRegion(regionKey, enemyName) {
     const wrapper = document.getElementById('mapWrapper');
     const pin = document.getElementById('mapPin');
+    const label = document.getElementById('mapPinLabel');
     const region = regions[regionKey];
     
     if (region) {
-        // Stecknadel genau an die Koordinaten der Region setzen
+        // Stecknadel & Text-Banner exakt setzen
         pin.style.left = region.x;
         pin.style.top = region.y;
         pin.style.display = 'block';
 
-        // Zoom & Pan auf die Koordinaten
+        label.style.left = region.x;
+        label.style.top = region.y;
+        label.innerText = enemyName || "Boss / Gegnerspawn";
+        label.style.display = 'block';
+
+        // Zoom & Pan auf den Gegnerspawn
         wrapper.style.transform = `scale(${region.scale}) translate(calc(50% - ${region.x}), calc(50% - ${region.y}))`;
     } else {
         resetMap();
@@ -238,13 +245,15 @@ function focusRegion(regionKey) {
 function resetMap() {
     const wrapper = document.getElementById('mapWrapper');
     const pin = document.getElementById('mapPin');
+    const label = document.getElementById('mapPinLabel');
     pin.style.display = 'none';
+    label.style.display = 'none';
     wrapper.style.transform = 'scale(1) translate(0px, 0px)';
 }
 
-function selectItem(regionKey) {
+function selectItem(regionKey, enemyName) {
     document.getElementById('regionSelect').value = regionKey;
-    focusRegion(regionKey);
+    focusRegion(regionKey, enemyName);
 }
 
 function updateView() {
@@ -263,6 +272,7 @@ function updateView() {
         const matchesCategory = (selectedCategory === 'all' || item.type === selectedCategory);
         const matchesSearch = item.name.toLowerCase().includes(searchFilter) || 
                               item.effect.toLowerCase().includes(searchFilter) ||
+                              item.bestEnemy.toLowerCase().includes(searchFilter) ||
                               regionName.includes(searchFilter);
 
         return matchesRegion && matchesCategory && matchesSearch;
@@ -276,7 +286,7 @@ function updateView() {
         let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
         const regionInfo = regions[item.region] ? regions[item.region].name : item.region;
 
-        card.onclick = () => selectItem(item.region);
+        card.onclick = () => selectItem(item.region, item.bestEnemy);
 
         card.innerHTML = `
             <div class="item-icon-box">${item.symbol}</div>
@@ -285,9 +295,13 @@ function updateView() {
                     <span class="item-name ${item.rarity}">${item.name}</span>
                     <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
                 </div>
-                <div class="item-info"><strong>Typ:</strong> ${item.type}</div>
+                <div class="item-info"><strong>Typ:</strong> ${item.type} | <strong>Region:</strong> ${regionInfo}</div>
                 <div class="item-effect">${item.effect}</div>
-                <div class="location-badge">📍 Fundort: ${regionInfo} (Tippen für Pin)</div>
+                <div class="boss-info-box">
+                    <span>👾 Bestes Ziel: <span class="boss-name">${item.bestEnemy}</span></span>
+                    <span class="drop-rate">🎯 ${item.dropRate}</span>
+                </div>
+                <div class="location-badge">📍 Tippen für Stecknadel auf Gegner</div>
             </div>
         `;
         dropContainer.appendChild(card);
