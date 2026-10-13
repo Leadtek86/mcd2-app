@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monats-Schichtplan</title>
+    <title>Schichtplan App</title>
+    <!-- Supabase Client Bibliothek -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -13,7 +15,6 @@
             --text-main: #c9d1d9;
             --text-muted: #8b949e;
             
-            /* Schichtfarben */
             --fruh-bg: #1f3a5f;
             --fruh-border: #388bfd;
             --nacht-bg: #3c1e5a;
@@ -21,12 +22,10 @@
             --spat-bg: #5a3214;
             --spat-border: #f0883e;
 
-            /* Frei in Grün */
             --frei-bg: #12381b;
             --frei-border: #2ea043;
             --frei-text: #56d364;
 
-            /* Urlaub ebenfalls in Grün */
             --urlaub-bg: #0e4429;
             --urlaub-border: #26a641;
             --urlaub-text: #7ee787;
@@ -67,10 +66,7 @@
         .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; cursor: pointer; transition: border-color 0.2s; overflow: hidden; }
         .day-cell:hover { border-color: var(--accent-gold); }
         .day-cell.other-month { opacity: 0.3; background: #080a0f; }
-        
-        /* Vergangene Tage ausgegraut */
         .day-cell.past { opacity: 0.45; filter: grayscale(30%); }
-
         .day-cell.today { border: 2px solid #ff0055 !important; }
         .day-cell.selecting { border: 2px dashed var(--urlaub-border) !important; background: #0e2915; }
 
@@ -82,8 +78,6 @@
         .shift-fruh { background: var(--fruh-bg); color: #79c0ff; border: 1px solid var(--fruh-border); }
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
         .shift-mittags { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
-        
-        /* Frei & Urlaub in Grün */
         .shift-frei { background: var(--frei-bg); color: var(--frei-text); border: 1px solid var(--frei-border); }
         .shift-urlaub { background: var(--urlaub-bg); color: var(--urlaub-text); border: 1px solid var(--urlaub-border); font-size: 0.65rem; font-weight: 800; }
 
@@ -97,8 +91,8 @@
 <body>
 
 <header>
-    <h1>Monats-Schichtplan</h1>
-    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Urlaubsverwaltung</p>
+    <h1>Schichtplan App</h1>
+    <p class="subtitle">Live-Sync für 2 Personen</p>
 </header>
 
 <div class="controls-bar">
@@ -106,14 +100,15 @@
         <div class="legend-item"><span class="dot fruh"></span> Früh</div>
         <div class="legend-item"><span class="dot nacht"></span> Nacht</div>
         <div class="legend-item"><span class="dot mittags"></span> Mittags</div>
-        <div class="legend-item"><span class="dot frei"></span> Frei (Grün)</div>
-        <div class="legend-item"><span class="dot urlaub"></span> Urlaub (Grün)</div>
+        <div class="legend-item"><span class="dot frei"></span> Frei</div>
+        <div class="legend-item"><span class="dot urlaub"></span> Urlaub</div>
     </div>
     <div class="info-box" id="infoBox">
-        💡 <span>Urlaub:</span> Tippe auf Start- und Enddatum. Tippe auf Urlaub, um ihn einzeln zu löschen.
+        💡 <span>Urlaub:</span> Tippe auf Start- und Enddatum. Einzelner Klick auf Urlaub löscht diesen Tag.
     </div>
     <div class="action-row">
-        <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Gesamten Urlaub zurücksetzen</button>
+        <button class="btn-action" onclick="fetchCloudData()">🔄 Live-Daten laden</button>
+        <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Alles zurücksetzen</button>
     </div>
 </div>
 
@@ -131,162 +126,199 @@
 </div>
 
 <script>
-const anchorDate = new Date(2026, 9, 12); 
-let currentDisplayDate = new Date(2026, 9, 13);
+    // Feste Supabase-Konfiguration
+    const SUPABASE_URL = "https://lbjpkereemplchdaltpz.supabase.co";
+    const SUPABASE_ANON_KEY = "Sb_publishable_9cRURwHhw93Qe9nomNXrLQ_F1bW4N_G";
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const shiftCycle = ["fruh", "nacht", "mittags"];
-const shiftData = {
-    fruh: { name: "Frühschicht", time: "05:55–14:00", class: "shift-fruh" },
-    nacht: { name: "Nachtschicht", time: "21:55–06:00", class: "shift-nacht" },
-    mittags: { name: "Mittagschicht", time: "13:55–22:00", class: "shift-mittags" },
-    frei: { name: "Frei", time: "Wochenende", class: "shift-frei" },
-    urlaub: { name: "🌴 URLAUB", time: "Frei", class: "shift-urlaub" }
-};
+    const anchorDate = new Date(2026, 9, 12); 
+    let currentDisplayDate = new Date(2026, 9, 13);
 
-const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+    const shiftCycle = ["fruh", "nacht", "mittags"];
+    const shiftData = {
+        fruh: { name: "Frühschicht", time: "05:55–14:00", class: "shift-fruh" },
+        nacht: { name: "Nachtschicht", time: "21:55–06:00", class: "shift-nacht" },
+        mittags: { name: "Mittagschicht", time: "13:55–22:00", class: "shift-mittags" },
+        frei: { name: "Frei", time: "Wochenende", class: "shift-frei" },
+        urlaub: { name: "🌴 URLAUB", time: "Frei", class: "shift-urlaub" }
+    };
 
-let vacationDays = [];
-try {
-    vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
-} catch (e) {
-    vacationDays = [];
-}
+    const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-let selectionStart = null;
+    let vacationDays = [];
+    let selectionStart = null;
 
-function getCalculatedShift(date) {
-    const dayOfWeek = (date.getDay() + 6) % 7;
-    if (dayOfWeek >= 5) return "frei";
+    async function fetchCloudData() {
+        document.getElementById("infoBox").innerHTML = `🔄 <span>Lade Live-Daten...</span>`;
+        try {
+            const { data, error } = await supabaseClient
+                .from('vacation_days')
+                .select('*')
+                .eq('id', 'shared_plan')
+                .single();
 
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    const mondayOfWeek = new Date(d.setDate(diff));
-    mondayOfWeek.setHours(0,0,0,0);
-
-    const anchorMonday = new Date(2026, 9, 12);
-    anchorMonday.setHours(0,0,0,0);
-
-    const diffTime = mondayOfWeek.getTime() - anchorMonday.getTime();
-    const diffWeeks = Math.round(diffTime / (1000 * 3600 * 24 * 7));
-
-    let cycleIndex = diffWeeks % 3;
-    if (cycleIndex < 0) cycleIndex += 3;
-
-    return shiftCycle[cycleIndex];
-}
-
-function getShiftForDate(date) {
-    const dateString = date.toISOString().split('T')[0];
-    if (vacationDays.includes(dateString)) {
-        return "urlaub";
-    }
-    return getCalculatedShift(date);
-}
-
-function renderCalendar() {
-    const grid = document.getElementById("daysGrid");
-    grid.innerHTML = "";
-
-    const year = currentDisplayDate.getFullYear();
-    const month = currentDisplayDate.getMonth();
-
-    document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
-
-    const firstDayOfMonth = new Date(year, month, 1);
-    let startDayOffset = (firstDayOfMonth.getDay() + 6) % 7;
-
-    let runner = new Date(year, month, 1 - startDayOffset);
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    for (let i = 0; i < 42; i++) {
-        const cellDate = new Date(runner);
-        cellDate.setHours(0,0,0,0);
-
-        const isCurrentMonth = runner.getMonth() === month;
-        const isToday = cellDate.getTime() === today.getTime();
-        const isPast = cellDate.getTime() < today.getTime();
-        const dateStr = runner.toISOString().split('T')[0];
-
-        const shiftKey = getShiftForDate(runner);
-        const shift = shiftData[shiftKey];
-
-        const cell = document.createElement("div");
-        let isSelecting = selectionStart === dateStr;
-        cell.className = `day-cell ${isCurrentMonth ? '' : 'other-month'} ${isPast ? 'past' : ''} ${isToday ? 'today' : ''} ${isSelecting ? 'selecting' : ''}`;
-        
-        cell.onclick = () => handleDateClick(dateStr);
-
-        cell.innerHTML = `
-            <div class="day-number">${runner.getDate()}</div>
-            <div class="shift-info">
-                <div class="shift-name ${shift.class}">${shift.name}</div>
-                <div class="shift-time">${shift.time}</div>
-            </div>
-        `;
-
-        grid.appendChild(cell);
-        runner.setDate(runner.getDate() + 1);
-    }
-}
-
-function handleDateClick(dateStr) {
-    if (vacationDays.includes(dateStr)) {
-        vacationDays = vacationDays.filter(d => d !== dateStr);
-        selectionStart = null;
-        localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
-        document.getElementById("infoBox").innerHTML = `🗑️ <span>Urlaubstag ${dateStr} entfernt.</span>`;
-        renderCalendar();
-        return;
-    }
-
-    if (!selectionStart) {
-        selectionStart = dateStr;
-        document.getElementById("infoBox").innerHTML = `💡 <span>Start: ${dateStr}</span> – Tippe nun das Enddatum an!`;
-        renderCalendar();
-    } else {
-        let start = new Date(selectionStart);
-        let end = new Date(dateStr);
-
-        if (start > end) {
-            let temp = start;
-            start = end;
-            end = temp;
-        }
-
-        let curr = new Date(start);
-        while (curr <= end) {
-            const dStr = curr.toISOString().split('T')[0];
-            if (!vacationDays.includes(dStr)) {
-                vacationDays.push(dStr);
+            if (data && data.dates) {
+                vacationDays = data.dates;
+                localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
             }
-            curr.setDate(curr.getDate() + 1);
+        } catch (e) {
+            vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+        }
+        renderCalendar();
+        document.getElementById("infoBox").innerHTML = `✅ <span>Live-Daten aktuell!</span>`;
+    }
+
+    async function saveCloudData() {
+        localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+        try {
+            await supabaseClient
+                .from('vacation_days')
+                .upsert({ id: 'shared_plan', dates: vacationDays });
+        } catch (e) {
+            console.log("Fehler beim Speichern");
+        }
+    }
+
+    function getCalculatedShift(date) {
+        const dayOfWeek = (date.getDay() + 6) % 7;
+        if (dayOfWeek >= 5) return "frei";
+
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const mondayOfWeek = new Date(d.setDate(diff));
+        mondayOfWeek.setHours(0,0,0,0);
+
+        const anchorMonday = new Date(2026, 9, 12);
+        anchorMonday.setHours(0,0,0,0);
+
+        const diffTime = mondayOfWeek.getTime() - anchorMonday.getTime();
+        const diffWeeks = Math.round(diffTime / (1000 * 3600 * 24 * 7));
+
+        let cycleIndex = diffWeeks % 3;
+        if (cycleIndex < 0) cycleIndex += 3;
+
+        return shiftCycle[cycleIndex];
+    }
+
+    function getShiftForDate(date) {
+        const dateString = date.toISOString().split('T')[0];
+        if (vacationDays.includes(dateString)) {
+            return "urlaub";
+        }
+        return getCalculatedShift(date);
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById("daysGrid");
+        grid.innerHTML = "";
+
+        const year = currentDisplayDate.getFullYear();
+        const month = currentDisplayDate.getMonth();
+
+        document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        let startDayOffset = (firstDayOfMonth.getDay() + 6) % 7;
+
+        let runner = new Date(year, month, 1 - startDayOffset);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        for (let i = 0; i < 42; i++) {
+            const cellDate = new Date(runner);
+            cellDate.setHours(0,0,0,0);
+
+            const isCurrentMonth = runner.getMonth() === month;
+            const isToday = cellDate.getTime() === today.getTime();
+            const isPast = cellDate.getTime() < today.getTime();
+            const dateStr = runner.toISOString().split('T')[0];
+
+            const shiftKey = getShiftForDate(runner);
+            const shift = shiftData[shiftKey];
+
+            const cell = document.createElement("div");
+            let isSelecting = selectionStart === dateStr;
+            cell.className = `day-cell ${isCurrentMonth ? '' : 'other-month'} ${isPast ? 'past' : ''} ${isToday ? 'today' : ''} ${isSelecting ? 'selecting' : ''}`;
+            
+            cell.onclick = () => handleDateClick(dateStr);
+
+            cell.innerHTML = `
+                <div class="day-number">${runner.getDate()}</div>
+                <div class="shift-info">
+                    <div class="shift-name ${shift.class}">${shift.name}</div>
+                    <div class="shift-time">${shift.time}</div>
+                </div>
+            `;
+
+            grid.appendChild(cell);
+            runner.setDate(runner.getDate() + 1);
+        }
+    }
+
+    async function handleDateClick(dateStr) {
+        if (vacationDays.includes(dateStr)) {
+            vacationDays = vacationDays.filter(d => d !== dateStr);
+            selectionStart = null;
+            document.getElementById("infoBox").innerHTML = `⏳ <span>Speichere...</span>`;
+            renderCalendar();
+            await saveCloudData();
+            document.getElementById("infoBox").innerHTML = `🗑️ <span>Urlaubstag ${dateStr} entfernt.</span>`;
+            renderCalendar();
+            return;
         }
 
-        selectionStart = null;
-        localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
-        document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub erfolgreich eingetragen!</span>`;
+        if (!selectionStart) {
+            selectionStart = dateStr;
+            document.getElementById("infoBox").innerHTML = `💡 <span>Start: ${dateStr}</span> – Tippe Enddatum an!`;
+            renderCalendar();
+        } else {
+            let start = new Date(selectionStart);
+            let end = new Date(dateStr);
+
+            if (start > end) {
+                let temp = start;
+                start = end;
+                end = temp;
+            }
+
+            let curr = new Date(start);
+            while (curr <= end) {
+                const dStr = curr.toISOString().split('T')[0];
+                if (!vacationDays.includes(dStr)) {
+                    vacationDays.push(dStr);
+                }
+                curr.setDate(curr.getDate() + 1);
+            }
+
+            selectionStart = null;
+            document.getElementById("infoBox").innerHTML = `⏳ <span>Speichere in Cloud...</span>`;
+            renderCalendar();
+
+            await saveCloudData();
+            document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub live synchronisiert!</span>`;
+            renderCalendar();
+        }
+    }
+
+    function changeMonth(delta) {
+        currentDisplayDate.setMonth(currentDisplayDate.getMonth() + delta);
         renderCalendar();
     }
-}
 
-function changeMonth(delta) {
-    currentDisplayDate.setMonth(currentDisplayDate.getMonth() + delta);
-    renderCalendar();
-}
-
-function resetVacation() {
-    if (confirm("Möchtest du wirklich alle eingetragenen Urlaubstage löschen?")) {
-        vacationDays = [];
-        localStorage.removeItem("myVacationDays");
-        selectionStart = null;
-        document.getElementById("infoBox").innerHTML = `💡 <span>Urlaub gelöscht.</span>`;
-        renderCalendar();
+    async function resetVacation() {
+        if (confirm("Möchtest du wirklich alle Urlaubstage löschen?")) {
+            vacationDays = [];
+            document.getElementById("infoBox").innerHTML = `⏳ <span>Lösche...</span>`;
+            renderCalendar();
+            await saveCloudData();
+            document.getElementById("infoBox").innerHTML = `💡 <span>Alles zurückgesetzt.</span>`;
+            renderCalendar();
+        }
     }
-}
 
-renderCalendar();
+    fetchCloudData();
 </script>
 
 </body>
