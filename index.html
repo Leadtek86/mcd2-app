@@ -23,16 +23,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 8px;
         }
 
         .app-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 440px;
             border: 2px solid rgba(255, 255, 255, 0.9);
-            border-radius: 28px;
-            padding: 20px 14px 24px 14px;
-            background: rgba(12, 13, 16, 0.75);
+            border-radius: 24px;
+            padding: 16px 10px 20px 10px;
+            background: rgba(12, 13, 16, 0.85);
             backdrop-filter: blur(10px);
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0,0,0,0.5);
             position: relative;
@@ -43,7 +43,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             padding: 0 4px;
         }
 
@@ -51,10 +51,10 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -67,7 +67,7 @@
 
         .year-text {
             color: #ff1a00;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 800;
             letter-spacing: 2px;
             line-height: 1;
@@ -76,7 +76,7 @@
 
         .month-script {
             font-family: 'Great Vibes', cursive;
-            font-size: 2.4rem;
+            font-size: 2.1rem;
             color: #ffffff;
             line-height: 1.1;
             margin-top: -2px;
@@ -86,19 +86,19 @@
         .status-banner {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 10px;
-            border-radius: 10px;
-            font-size: 0.7rem;
+            padding: 5px 8px;
+            border-radius: 8px;
+            font-size: 0.65rem;
             text-align: center;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
             color: #aaa;
         }
         .status-banner span { color: #ff4d4d; font-weight: bold; }
 
         .action-buttons {
             display: flex;
-            gap: 8px;
-            margin-bottom: 14px;
+            gap: 6px;
+            margin-bottom: 10px;
         }
 
         .btn {
@@ -106,9 +106,9 @@
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: #fff;
-            padding: 6px;
-            border-radius: 8px;
-            font-size: 0.7rem;
+            padding: 5px;
+            border-radius: 6px;
+            font-size: 0.65rem;
             font-weight: 600;
             cursor: pointer;
         }
@@ -116,9 +116,10 @@
 
         .calendar-card {
             border: 1.5px solid rgba(255, 255, 255, 0.8);
-            border-radius: 14px;
-            padding: 6px;
+            border-radius: 12px;
+            padding: 4px;
             background: rgba(8, 9, 12, 0.6);
+            width: 100%;
         }
 
         .weekdays-header {
@@ -126,39 +127,39 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 2px;
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 800;
             color: #fff;
-            padding-bottom: 6px;
+            padding-bottom: 4px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 4px;
-            letter-spacing: 0.5px;
+            margin-bottom: 3px;
         }
 
         .days-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
+            gap: 2px;
+            width: 100%;
         }
 
         .day-cell {
             background: rgba(15, 18, 24, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
-            padding: 3px 2px;
-            min-height: 68px;
+            border-radius: 6px;
+            padding: 2px;
+            min-height: 60px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
             transition: all 0.15s ease;
-            position: relative;
+            overflow: hidden;
         }
 
         .day-cell:active { transform: scale(0.95); }
         .day-cell.other-month { opacity: 0.2; }
-        .day-cell.today { border-color: #ff1a00 !important; box-shadow: 0 0 8px rgba(255, 26, 0, 0.4); }
+        .day-cell.today { border-color: #ff1a00 !important; box-shadow: 0 0 6px rgba(255, 26, 0, 0.4); }
         .day-cell.selecting { border: 2px dashed #ff4d4d !important; background: rgba(255, 77, 77, 0.15); }
 
         .day-header-row {
@@ -166,24 +167,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 2px;
+            padding: 0 1px;
         }
 
         .holiday-indicator {
-            font-size: 0.45rem;
+            font-size: 0.4rem;
             background: #d29922;
             color: #000;
             font-weight: 800;
-            padding: 1px 3px;
-            border-radius: 3px;
-            max-width: 45px;
+            padding: 0.5px 2px;
+            border-radius: 2px;
+            max-width: 32px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
         .day-number {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 700;
             color: #ddd;
             margin-left: auto;
@@ -191,27 +192,27 @@
 
         .shift-badge {
             width: 100%;
-            border-radius: 5px;
+            border-radius: 4px;
             padding: 2px 1px;
             text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 0px;
         }
 
         .shift-name {
-            font-size: 0.5rem;
+            font-size: 0.48rem;
             font-weight: 800;
             text-transform: uppercase;
         }
 
         .shift-time {
-            font-size: 0.42rem;
+            font-size: 0.38rem;
             opacity: 0.9;
             font-weight: 500;
         }
 
-        /* Schicht-Farben & Feiertags-Look */
+        /* Schicht-Farben */
         .s-fruh { background: #112a46; color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.3); }
         .s-nacht { background: #231238; color: #bc8cff; border: 1px solid rgba(188, 140, 255, 0.3); }
         .s-mittags { background: #381f0d; color: #ffa657; border: 1px solid rgba(255, 166, 87, 0.3); }
@@ -232,7 +233,7 @@
     </div>
 
     <div class="status-banner" id="infoBox">
-        💡 <span>Urlaub:</span> Tippe Start & Enddatum. Feiertage NRW integriert!
+        💡 <span>Urlaub:</span> Tippe Start & Enddatum. Feiertage NRW aktiv!
     </div>
 
     <div class="action-buttons">
@@ -267,7 +268,6 @@
 
     const monthNamesGerman = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-    // Funktion zur Berechnung von Ostern für ein gegebenes Jahr (Gaußsche Osterformel)
     function getEasterDate(year) {
         const a = year % 19;
         const b = Math.floor(year / 100);
@@ -286,21 +286,16 @@
         return new Date(year, month, day);
     }
 
-    // Feste und bewegliche Feiertage für NRW generieren
     function getHolidaysNRW(year) {
         const holidays = {};
-        
-        // Feste Feiertage
         holidays[`${year}-01-01`] = "Neujahr";
         holidays[`${year}-05-01`] = "Tag d. Arbeit";
-        holidays[`${year}-10-03`] = "Tag d. Dt. Einheit";
+        holidays[`${year}-10-03`] = "Tag d. Einheit";
         holidays[`${year}-11-01`] = "Allerheiligen";
-        holidays[`${year}-12-25`] = "1. Weihnachtstag";
-        holidays[`${year}-12-26`] = "2. Weihnachtstag";
+        holidays[`${year}-12-25`] = "1. Weihnachten";
+        holidays[`${year}-12-26`] = "2. Weihnachten";
 
-        // Bewegliche Feiertage basierend auf Ostern
         const easter = getEasterDate(year);
-        
         const addDays = (date, days) => {
             const result = new Date(date);
             result.setDate(result.getDate() + days);
@@ -309,7 +304,7 @@
 
         holidays[addDays(easter, -2)] = "Karfreitag";
         holidays[addDays(easter, 1)] = "Ostermontag";
-        holidays[addDays(easter, 39)] = "Christi Himmelfahrt";
+        holidays[addDays(easter, 39)] = "Himmelfahrt";
         holidays[addDays(easter, 50)] = "Pfingstmontag";
         holidays[addDays(easter, 60)] = "Fronleichnam";
 
