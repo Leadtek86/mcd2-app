@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monats-Schichtplan mit Urlaub</title>
+    <title>Monats-Schichtplan & Online-Urlaub</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -20,10 +20,13 @@
             --nacht-border: #a371f7;
             --spat-bg: #5a3214;
             --spat-border: #f0883e;
-            --frei-bg: #16231a;
-            --frei-border: #238636;
-            --urlaub-bg: #4a3800;
-            --urlaub-border: #e3b341;
+            --frei-bg: #1e2229;
+            --frei-border: #484f58;
+
+            /* Urlaub jetzt in Knallgrün */
+            --urlaub-bg: #12381b;
+            --urlaub-border: #2ea043;
+            --urlaub-text: #56d364;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -44,12 +47,12 @@
         .dot.frei { background: var(--frei-border); }
         .dot.urlaub { background: var(--urlaub-border); }
 
-        .info-box { background: var(--card-bg); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; }
-        .info-box span { color: var(--accent-gold); font-weight: bold; }
+        .info-box { background: var(--card-bg); border: 1px solid var(--urlaub-border); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; }
+        .info-box span { color: var(--urlaub-text); font-weight: bold; }
 
         .action-row { display: flex; justify-content: center; gap: 8px; }
         .btn-action { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
-        .btn-action:hover { background: #30363d; border-color: var(--accent-gold); }
+        .btn-action:hover { background: #30363d; border-color: var(--urlaub-border); }
 
         /* Navigation */
         .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); }
@@ -64,10 +67,10 @@
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         
         .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; cursor: pointer; transition: border-color 0.2s; }
-        .day-cell:hover { border-color: var(--accent-gold); }
+        .day-cell:hover { border-color: var(--urlaub-border); }
         .day-cell.other-month { opacity: 0.3; background: #080a0f; }
         .day-cell.today { border: 2px solid #ff0055 !important; }
-        .day-cell.selecting { border: 2px dashed var(--accent-gold) !important; background: #1f1b0c; }
+        .day-cell.selecting { border: 2px dashed var(--urlaub-border) !important; background: #0e2915; }
 
         .day-number { font-size: 0.75rem; font-weight: bold; color: #fff; text-align: right; }
         
@@ -79,8 +82,10 @@
         .shift-fruh { background: var(--fruh-bg); color: #79c0ff; border: 1px solid var(--fruh-border); }
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
         .shift-mittags { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
-        .shift-frei { background: var(--frei-bg); color: #7ee787; border: 1px solid var(--frei-border); }
-        .shift-urlaub { background: var(--urlaub-bg); color: #f0883e; border: 1px solid var(--urlaub-border); }
+        .shift-frei { background: var(--frei-bg); color: #8b949e; border: 1px solid var(--frei-border); }
+        
+        /* GRÜNER URLAUB */
+        .shift-urlaub { background: var(--urlaub-bg); color: var(--urlaub-text); border: 1px solid var(--urlaub-border); font-size: 0.7rem; font-weight: 800; }
 
         @media (max-width: 600px) {
             .day-cell { min-height: 72px; padding: 4px 2px; }
@@ -92,7 +97,7 @@
 
 <header>
     <h1>Monats-Schichtplan</h1>
-    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Urlaub verwalten</p>
+    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Live-Online-Urlaub</p>
 </header>
 
 <div class="controls-bar">
@@ -101,13 +106,14 @@
         <div class="legend-item"><span class="dot nacht"></span> Nacht (21:55–06:00)</div>
         <div class="legend-item"><span class="dot mittags"></span> Mittags (13:55–22:00)</div>
         <div class="legend-item"><span class="dot frei"></span> Frei</div>
-        <div class="legend-item"><span class="dot urlaub"></span> Urlaub</div>
+        <div class="legend-item"><span class="dot urlaub"></span> Urlaub (Grün)</div>
     </div>
     <div class="info-box" id="infoBox">
-        💡 <span>Urlaub eintragen:</span> Tippe auf das Startdatum und danach auf das Enddatum.
+        💡 <span>Urlaub eintragen:</span> Tippe auf Start- und Enddatum im Kalender.
     </div>
     <div class="action-row">
-        <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Gesamten Urlaub zurücksetzen</button>
+        <button class="btn-action" onclick="syncOnlineData()">🔄 Online Synchronisieren</button>
+        <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Urlaub zurücksetzen</button>
     </div>
 </div>
 
@@ -134,13 +140,39 @@ const shiftData = {
     nacht: { name: "Nachtschicht", time: "21:55 – 06:00", class: "shift-nacht" },
     mittags: { name: "Mittagschicht", time: "13:55 – 22:00", class: "shift-mittags" },
     frei: { name: "Frei", time: "Wochenende", class: "shift-frei" },
-    urlaub: { name: "Urlaub", time: "Frei / Urlaub", class: "shift-urlaub" }
+    urlaub: { name: "🌴 URLAUB", time: "Ganztägig Frei", class: "shift-urlaub" }
 };
 
 const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-let vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
-let selectionStart = null; // Speichert das erste angetippte Datum
+// Kostenlose Online-Speicher ID für deinen persönlichen Schichtplan
+const ONLINE_STORAGE_KEY = "leadtek86_schichtplan_urlaub";
+let vacationDays = [];
+let selectionStart = null;
+
+// Lade Urlaub beim Start aus dem Online-Speicher
+async function loadOnlineVacation() {
+    try {
+        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${ONLINE_STORAGE_KEY}`);
+        const data = await response.json();
+        if (data) {
+            vacationDays = JSON.parse(data);
+        }
+    } catch (e) {
+        // Fallback falls offline
+        vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+    }
+    renderCalendar();
+}
+
+async function saveOnlineVacation() {
+    localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+    try {
+        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/PostValue/${ONLINE_STORAGE_KEY}/${encodeURIComponent(JSON.stringify(vacationDays))}`, { method: 'POST' });
+    } catch (e) {
+        console.log("Online-Speicherung fehlgeschlagen.");
+    }
+}
 
 function getCalculatedShift(date) {
     const dayOfWeek = (date.getDay() + 6) % 7;
@@ -203,7 +235,6 @@ function renderCalendar() {
         let isSelecting = selectionStart === dateStr;
         cell.className = `day-cell ${isCurrentMonth ? '' : 'other-month'} ${isToday ? 'today' : ''} ${isSelecting ? 'selecting' : ''}`;
         
-        // Klick-Logik direkt im Kalender für Start- und Enddatum
         cell.onclick = () => handleDateClick(dateStr);
 
         cell.innerHTML = `
@@ -219,19 +250,16 @@ function renderCalendar() {
     }
 }
 
-function handleDateClick(dateStr) {
+async function handleDateClick(dateStr) {
     if (!selectionStart) {
-        // Schritt 1: Startdatum gewählt
         selectionStart = dateStr;
-        document.getElementById("infoBox").innerHTML = `💡 <span>Start gewählt (${dateStr}).</span> Jetzt das Enddatum anklicken!`;
+        document.getElementById("infoBox").innerHTML = `💡 <span>Start gewählt (${dateStr}).</span> Jetzt Enddatum anklicken!`;
         renderCalendar();
     } else {
-        // Schritt 2: Enddatum gewählt -> Zeitraum füllen
         let start = new Date(selectionStart);
         let end = new Date(dateStr);
 
         if (start > end) {
-            // Wenn man rückwärts klickt, tauschen
             let temp = start;
             start = end;
             end = temp;
@@ -246,9 +274,12 @@ function handleDateClick(dateStr) {
             curr.setDate(curr.getDate() + 1);
         }
 
-        localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
         selectionStart = null;
-        document.getElementById("infoBox").innerHTML = `💡 <span>Urlaub eingetragen!</span> Tippe auf Start- und Enddatum für den nächsten Zeitraum.`;
+        document.getElementById("infoBox").innerHTML = `⏳ <span>Wird online gespeichert...</span>`;
+        renderCalendar();
+
+        await saveOnlineVacation();
+        document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub live gespeichert!</span> Alle können ihn jetzt sehen.`;
         renderCalendar();
     }
 }
@@ -258,17 +289,23 @@ function changeMonth(delta) {
     renderCalendar();
 }
 
-function resetVacation() {
-    if (confirm("Möchtest du wirklich alle eingetragenen Urlaubstage löschen?")) {
+async function resetVacation() {
+    if (confirm("Möchtest du wirklich alle Urlaube löschen? Das wird auch online aktualisiert.")) {
         vacationDays = [];
-        localStorage.removeItem("myVacationDays");
+        await saveOnlineVacation();
         selectionStart = null;
-        document.getElementById("infoBox").innerHTML = `💡 <span>Urlaub eintragen:</span> Tippe auf das Startdatum und danach auf das Enddatum.`;
+        document.getElementById("infoBox").innerHTML = `💡 <span>Urlaub gelöscht.</span> Tippe auf Start- und Enddatum für neuen Urlaub.`;
         renderCalendar();
     }
 }
 
-renderCalendar();
+function syncOnlineData() {
+    document.getElementById("infoBox").innerHTML = `🔄 <span>Lade Daten online...</span>`;
+    loadOnlineVacation();
+}
+
+// Beim Starten sofort Daten online laden
+loadOnlineVacation();
 </script>
 
 </body>
