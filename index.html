@@ -48,7 +48,7 @@
         .dot.frei { background: var(--frei-border); }
         .dot.urlaub { background: var(--urlaub-border); }
 
-        .info-box { background: var(--card-bg); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; width: 100%; }
+        .info-box { background: var(--card-bg); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; width: 100%; word-break: break-all; }
         .info-box span { color: var(--accent-gold); font-weight: bold; }
 
         .action-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
@@ -156,6 +156,11 @@
                 .eq('id', 'shared_plan')
                 .maybeSingle();
 
+            if (error) {
+                document.getElementById("infoBox").innerHTML = `⚠️ <span>Ladefehler: ${error.message}</span>`;
+                return;
+            }
+
             if (data && data.dates) {
                 vacationDays = data.dates;
             } else {
@@ -164,8 +169,7 @@
             renderCalendar();
             document.getElementById("infoBox").innerHTML = `✅ <span>Live-Daten geladen!</span>`;
         } catch (e) {
-            console.error("Ladefehler:", e);
-            document.getElementById("infoBox").innerHTML = `⚠️ <span>Fehler beim Laden!</span>`;
+            document.getElementById("infoBox").innerHTML = `⚠️ <span>Netzwerkfehler beim Laden</span>`;
         }
     }
 
@@ -176,14 +180,14 @@
                 .upsert({ id: 'shared_plan', dates: vacationDays }, { onConflict: 'id' });
 
             if (error) {
-                console.error("Supabase Speicherfehler:", error);
-                document.getElementById("infoBox").innerHTML = `⚠️ <span>Fehler beim Speichern in Cloud!</span>`;
+                console.error("Supabase Fehler:", error);
+                document.getElementById("infoBox").innerHTML = `⚠️ <span>Fehler: ${error.message}</span>`;
             } else {
                 document.getElementById("infoBox").innerHTML = `✅ <span>Erfolgreich in Cloud gespeichert!</span>`;
             }
         } catch (e) {
             console.error("Netzwerkfehler:", e);
-            document.getElementById("infoBox").innerHTML = `⚠️ <span>Verbindungsfehler!</span>`;
+            document.getElementById("infoBox").innerHTML = `⚠️ <span>Netzwerkfehler beim Speichern!</span>`;
         }
     }
 
