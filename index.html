@@ -26,10 +26,10 @@
             --frei-border: #2ea043;
             --frei-text: #56d364;
 
-            /* Urlaub in Gold/Gelb */
-            --urlaub-bg: #4a3800;
-            --urlaub-border: #e3b341;
-            --urlaub-text: #ffdf5d;
+            /* Urlaub ebenfalls in Grün */
+            --urlaub-bg: #0e4429;
+            --urlaub-border: #26a641;
+            --urlaub-text: #7ee787;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -67,8 +67,12 @@
         .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; cursor: pointer; transition: border-color 0.2s; }
         .day-cell:hover { border-color: var(--accent-gold); }
         .day-cell.other-month { opacity: 0.3; background: #080a0f; }
+        
+        /* Vergangene Tage leicht ausgegraut */
+        .day-cell.past { opacity: 0.45; filter: grayscale(30%); }
+
         .day-cell.today { border: 2px solid #ff0055 !important; }
-        .day-cell.selecting { border: 2px dashed var(--urlaub-border) !important; background: #281e00; }
+        .day-cell.selecting { border: 2px dashed var(--urlaub-border) !important; background: #0e2915; }
 
         .day-number { font-size: 0.75rem; font-weight: bold; color: #fff; text-align: right; }
         .shift-info { display: flex; flex-direction: column; gap: 2px; }
@@ -79,6 +83,7 @@
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
         .shift-mittags { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
         
+        /* Frei & Urlaub in Grün */
         .shift-frei { background: var(--frei-bg); color: var(--frei-text); border: 1px solid var(--frei-border); }
         .shift-urlaub { background: var(--urlaub-bg); color: var(--urlaub-text); border: 1px solid var(--urlaub-border); font-size: 0.7rem; font-weight: 800; }
 
@@ -101,13 +106,13 @@
         <div class="legend-item"><span class="dot nacht"></span> Nacht (21:55–06:00)</div>
         <div class="legend-item"><span class="dot mittags"></span> Mittags (13:55–22:00)</div>
         <div class="legend-item"><span class="dot frei"></span> Frei (Grün)</div>
-        <div class="legend-item"><span class="dot urlaub"></span> Urlaub</div>
+        <div class="legend-item"><span class="dot urlaub"></span> Urlaub (Grün)</div>
     </div>
     <div class="info-box" id="infoBox">
-        💡 <span>Urlaub eintragen:</span> Tippe auf Start- und Enddatum im Kalender.
+        💡 <span>Urlaub:</span> Tippe auf Start- und Enddatum. Tippe auf einen Urlaubstag, um ihn einzeln zu löschen.
     </div>
     <div class="action-row">
-        <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Urlaub zurücksetzen</button>
+        <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Gesamten Urlaub zurücksetzen</button>
     </div>
 </div>
 
@@ -200,6 +205,7 @@ function renderCalendar() {
 
         const isCurrentMonth = runner.getMonth() === month;
         const isToday = cellDate.getTime() === today.getTime();
+        const isPast = cellDate.getTime() < today.getTime();
         const dateStr = runner.toISOString().split('T')[0];
 
         const shiftKey = getShiftForDate(runner);
@@ -207,7 +213,7 @@ function renderCalendar() {
 
         const cell = document.createElement("div");
         let isSelecting = selectionStart === dateStr;
-        cell.className = `day-cell ${isCurrentMonth ? '' : 'other-month'} ${isToday ? 'today' : ''} ${isSelecting ? 'selecting' : ''}`;
+        cell.className = `day-cell ${isCurrentMonth ? '' : 'other-month'} ${isPast ? 'past' : ''} ${isToday ? 'today' : ''} ${isSelecting ? 'selecting' : ''}`;
         
         cell.onclick = () => handleDateClick(dateStr);
 
@@ -225,6 +231,17 @@ function renderCalendar() {
 }
 
 function handleDateClick(dateStr) {
+    // 1. Wenn der geklickte Tag bereits Urlaub ist -> einzeln entfernen!
+    if (vacationDays.includes(dateStr)) {
+        vacationDays = vacationDays.filter(d => d !== dateStr);
+        selectionStart = null;
+        localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+        document.getElementById("infoBox").innerHTML = `🗑️ <span>Urlaubstag ${dateStr} entfernt.</span>`;
+        renderCalendar();
+        return;
+    }
+
+    // 2. Ansonsten normale Start- / Enddatum-Auswahl für neuen Urlaub
     if (!selectionStart) {
         selectionStart = dateStr;
         document.getElementById("infoBox").innerHTML = `💡 <span>Start: ${dateStr}</span> – Tippe nun das Enddatum an!`;
@@ -261,7 +278,7 @@ function changeMonth(delta) {
 }
 
 function resetVacation() {
-    if (confirm("Möchtest du alle eingetragenen Urlaubstage löschen?")) {
+    if (confirm("Möchtest du wirklich alle eingetragenen Urlaubstage löschen?")) {
         vacationDays = [];
         localStorage.removeItem("myVacationDays");
         selectionStart = null;
