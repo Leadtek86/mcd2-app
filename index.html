@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monats-Schichtplan</title>
+    <title>Monats-Schichtplan mit Urlaub</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -22,6 +22,8 @@
             --spat-border: #f0883e;
             --frei-bg: #16231a;
             --frei-border: #238636;
+            --urlaub-bg: #4a3800;
+            --urlaub-border: #e3b341;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -31,14 +33,20 @@
         h1 { color: var(--accent-gold); font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
         p.subtitle { color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; }
 
-        /* Legende */
-        .legend { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 10px; }
+        /* Legende & Aktionen */
+        .controls-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .legend { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
         .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.7rem; background: var(--card-bg); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border-color); }
         .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .dot.fruh { background: var(--fruh-border); }
         .dot.nacht { background: var(--nacht-border); }
         .dot.mittags { background: var(--spat-border); }
         .dot.frei { background: var(--frei-border); }
+        .dot.urlaub { background: var(--urlaub-border); }
+
+        .action-row { display: flex; justify-content: center; gap: 8px; }
+        .btn-action { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
+        .btn-action:hover { background: #30363d; border-color: var(--accent-gold); }
 
         /* Navigation */
         .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); }
@@ -52,7 +60,8 @@
         
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         
-        .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; cursor: pointer; transition: border-color 0.2s; }
+        .day-cell:hover { border-color: var(--accent-gold); }
         .day-cell.other-month { opacity: 0.3; background: #080a0f; }
         .day-cell.today { border: 2px solid #ff0055 !important; }
 
@@ -67,6 +76,15 @@
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
         .shift-mittags { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
         .shift-frei { background: var(--frei-bg); color: #7ee787; border: 1px solid var(--frei-border); }
+        .shift-urlaub { background: var(--urlaub-bg); color: #f0883e; border: 1px solid var(--urlaub-border); }
+
+        /* Modal für Urlaub eintragen */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 8px; width: 90%; max-width: 350px; display: flex; flex-direction: column; gap: 10px; }
+        .modal-content h3 { color: var(--accent-gold); font-size: 1rem; margin-bottom: 4px; }
+        .modal-content label { font-size: 0.75rem; color: var(--text-muted); }
+        .modal-content input { width: 100%; padding: 8px; background: #0d1117; border: 1px solid var(--border-color); color: #fff; border-radius: 4px; font-size: 0.85rem; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
 
         @media (max-width: 600px) {
             .day-cell { min-height: 72px; padding: 4px 2px; }
@@ -78,14 +96,21 @@
 
 <header>
     <h1>Monats-Schichtplan</h1>
-    <p class="subtitle">Mo–Fr Arbeit (3-Wochen-Rhythmus) / Sa–So Frei</p>
+    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Urlaub verwalten</p>
 </header>
 
-<div class="legend">
-    <div class="legend-item"><span class="dot fruh"></span> Früh (05:55–14:00)</div>
-    <div class="legend-item"><span class="dot nacht"></span> Nacht (21:55–06:00)</div>
-    <div class="legend-item"><span class="dot mittags"></span> Mittags (13:55–22:00)</div>
-    <div class="legend-item"><span class="dot frei"></span> Frei</div>
+<div class="controls-bar">
+    <div class="legend">
+        <div class="legend-item"><span class="dot fruh"></span> Früh (05:55–14:00)</div>
+        <div class="legend-item"><span class="dot nacht"></span> Nacht (21:55–06:00)</div>
+        <div class="legend-item"><span class="dot mittags"></span> Mittags (13:55–22:00)</div>
+        <div class="legend-item"><span class="dot frei"></span> Frei</div>
+        <div class="legend-item"><span class="dot urlaub"></span> Urlaub</div>
+    </div>
+    <div class="action-row">
+        <button class="btn-action" onclick="openModal()">✈️ Urlaub eintragen</button>
+        <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Urlaub zurücksetzen</button>
+    </div>
 </div>
 
 <div class="month-nav">
@@ -101,8 +126,22 @@
     <div class="days-grid" id="daysGrid"></div>
 </div>
 
+<!-- Modal für Urlaub -->
+<div class="modal" id="vacationModal">
+    <div class="modal-content">
+        <h3>Urlaub eintragen</h3>
+        <label>Von Datum:</label>
+        <input type="date" id="startDate">
+        <label>Bis Datum:</label>
+        <input type="date" id="endDate">
+        <div class="modal-buttons">
+            <button class="btn-action" onclick="closeModal()">Abbrechen</button>
+            <button class="btn-action" style="background: #238636; border-color: #2ea043;" onclick="saveVacation()">Speichern</button>
+        </div>
+    </div>
+</div>
+
 <script>
-// Anker-Datum: Montag der Frühschicht-Woche (12.10.2026)
 const anchorDate = new Date(2026, 9, 12); 
 let currentDisplayDate = new Date(2026, 9, 13);
 
@@ -111,13 +150,17 @@ const shiftData = {
     fruh: { name: "Frühschicht", time: "05:55 – 14:00", class: "shift-fruh" },
     nacht: { name: "Nachtschicht", time: "21:55 – 06:00", class: "shift-nacht" },
     mittags: { name: "Mittagschicht", time: "13:55 – 22:00", class: "shift-mittags" },
-    frei: { name: "Frei", time: "Wochenende", class: "shift-frei" }
+    frei: { name: "Frei", time: "Wochenende", class: "shift-frei" },
+    urlaub: { name: "Urlaub", time: "Frei / Urlaub", class: "shift-urlaub" }
 };
 
 const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-function getShiftForDate(date) {
-    const dayOfWeek = (date.getDay() + 6) % 7; // 0=Mo ... 6=So
+// Urlaubstage im Browser-Speicher (LocalStorage) sichern
+let vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+
+function getCalculatedShift(date) {
+    const dayOfWeek = (date.getDay() + 6) % 7;
     if (dayOfWeek >= 5) return "frei";
 
     const d = new Date(date);
@@ -136,6 +179,14 @@ function getShiftForDate(date) {
     if (cycleIndex < 0) cycleIndex += 3;
 
     return shiftCycle[cycleIndex];
+}
+
+function getShiftForDate(date) {
+    const dateString = date.toISOString().split('T')[0];
+    if (vacationDays.includes(dateString)) {
+        return "urlaub";
+    }
+    return getCalculatedShift(date);
 }
 
 function renderCalendar() {
@@ -165,6 +216,10 @@ function renderCalendar() {
 
         const cell = document.createElement("div");
         cell.className = `day-cell ${isCurrentMonth ? '' : 'other-month'} ${isToday ? 'today' : ''}`;
+        
+        // Klick auf einen Tag, um Urlaub schnell an/auszuschalten
+        const dateStr = runner.toISOString().split('T')[0];
+        cell.onclick = () => toggleSingleDayVacation(dateStr);
 
         cell.innerHTML = `
             <div class="day-number">${runner.getDate()}</div>
@@ -179,9 +234,66 @@ function renderCalendar() {
     }
 }
 
+function toggleSingleDayVacation(dateStr) {
+    const index = vacationDays.indexOf(dateStr);
+    if (index > -1) {
+        vacationDays.splice(index, 1); // Urlaub entfernen
+    } else {
+        vacationDays.push(dateStr); // Urlaub hinzufügen
+    }
+    localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+    renderCalendar();
+}
+
 function changeMonth(delta) {
     currentDisplayDate.setMonth(currentDisplayDate.getMonth() + delta);
     renderCalendar();
+}
+
+function openModal() {
+    document.getElementById("vacationModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("vacationModal").style.display = "none";
+}
+
+function saveVacation() {
+    const startStr = document.getElementById("startDate").value;
+    const endStr = document.getElementById("endDate").value;
+
+    if (!startStr || !endStr) {
+        alert("Bitte Start- und Enddatum auswählen!");
+        return;
+    }
+
+    let curr = new Date(startStr);
+    let end = new Date(endStr);
+
+    if (curr > end) {
+        alert("Das Startdatum muss vor dem Enddatum liegen!");
+        return;
+    }
+
+    while (curr <= end) {
+        const dStr = curr.toISOString().split('T')[0];
+        if (!vacationDays.includes(dStr)) {
+            vacationDays.push(dStr);
+        }
+        curr.setDate(curr.getDate() + 1);
+    }
+
+    localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+    closeModal();
+    renderCalendar();
+}
+
+function resetVacation() {
+    if (confirm("Möchtest du wirklich alle eingetragenen Urlaubstage löschen?")) {
+        vacationDays = [];
+        localStorage.removeItem("myVacationDays");
+        renderCalendar();
+    }
 }
 
 renderCalendar();
