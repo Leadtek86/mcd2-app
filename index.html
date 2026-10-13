@@ -144,36 +144,6 @@ const ONLINE_STORAGE_KEY = "leadtek86_schichtplan_v3";
 let vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
 let selectionStart = null;
 
-// Sofort rendern mit lokalen Daten, damit der Kalender sofort da ist
-renderCalendar();
-// Im Hintergrund online synchronisieren
-loadOnlineVacation();
-
-async function loadOnlineVacation() {
-    try {
-        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${ONLINE_STORAGE_KEY}?t=${Date.now()}`);
-        const data = await response.text();
-        if (data && data !== "null" && data.length > 0) {
-            const cleanData = data.replace(/^"|"$/g, '').replace(/\\"/g, '"');
-            vacationDays = JSON.parse(cleanData);
-            localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
-            renderCalendar();
-        }
-    } catch (e) {
-        console.log("Offline / Ladefehler");
-    }
-}
-
-async function saveOnlineVacation() {
-    localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
-    try {
-        const payload = JSON.stringify(vacationDays);
-        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/PostValue/${ONLINE_STORAGE_KEY}/${encodeURIComponent(payload)}`, { method: 'POST' });
-    } catch (e) {
-        console.log("Online-Speicherung fehlgeschlagen");
-    }
-}
-
 function getCalculatedShift(date) {
     const dayOfWeek = (date.getDay() + 6) % 7;
     if (dayOfWeek >= 5) return "frei";
@@ -250,6 +220,31 @@ function renderCalendar() {
     }
 }
 
+async function loadOnlineVacation() {
+    try {
+        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${ONLINE_STORAGE_KEY}?t=${Date.now()}`);
+        const data = await response.text();
+        if (data && data !== "null" && data.length > 0) {
+            const cleanData = data.replace(/^"|"$/g, '').replace(/\\"/g, '"');
+            vacationDays = JSON.parse(cleanData);
+            localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+            renderCalendar();
+        }
+    } catch (e) {
+        console.log("Offline / Ladefehler");
+    }
+}
+
+async function saveOnlineVacation() {
+    localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+    try {
+        const payload = JSON.stringify(vacationDays);
+        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/PostValue/${ONLINE_STORAGE_KEY}/${encodeURIComponent(payload)}`, { method: 'POST' });
+    } catch (e) {
+        console.log("Online-Speicherung fehlgeschlagen");
+    }
+}
+
 async function handleDateClick(dateStr) {
     if (!selectionStart) {
         selectionStart = dateStr;
@@ -303,6 +298,10 @@ function syncOnlineData() {
     document.getElementById("infoBox").innerHTML = `🔄 <span>Lade Live-Daten...</span>`;
     loadOnlineVacation();
 }
+
+// Sofort beim Start rendern, damit der Kalender sofort da ist
+renderCalendar();
+loadOnlineVacation();
 </script>
 
 </body>
