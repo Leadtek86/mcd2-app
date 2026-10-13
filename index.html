@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbeitsplan & Schichtkalender</title>
+    <title>Monats-Schichtplan</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -25,111 +25,123 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 10px; max-width: 900px; margin: 0 auto; }
 
-        header { text-align: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
-        h1 { color: var(--accent-gold); font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; }
-        p.subtitle { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
+        header { text-align: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 12px; }
+        h1 { color: var(--accent-gold); font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
+        p.subtitle { color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; }
 
         /* Legende */
-        .legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px; }
-        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; background: var(--card-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .legend { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.7rem; background: var(--card-bg); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border-color); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .dot.fruh { background: var(--fruh-border); }
         .dot.nacht { background: var(--nacht-border); }
         .dot.spat { background: var(--spat-border); }
         .dot.frei { background: var(--frei-border); }
 
         /* Navigation */
-        .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); }
-        .month-nav button { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
-        .month-title { font-weight: bold; font-size: 1rem; color: #fff; }
+        .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); }
+        .month-nav button { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .month-title { font-weight: bold; font-size: 0.95rem; color: #fff; }
 
-        /* Wochen-Raster */
-        .week-container { display: flex; flex-direction: column; gap: 12px; }
-        .week-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; }
-        .week-header { font-size: 0.85rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 8px; display: flex; justify-content: space-between; }
-
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        @media (max-width: 600px) {
-            .days-grid { grid-template-columns: 1fr; }
-        }
-
-        .day-box { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; min-height: 58px; }
-        .day-box.today { border: 2px solid #ff0055 !important; }
+        /* Monats-Kalender Grid */
+        .calendar-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; }
         
-        .day-header { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; }
-        .day-name { color: var(--text-muted); }
-        .day-date { color: #fff; }
+        .weekdays-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; text-align: center; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); }
+        
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        
+        .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 75px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .day-cell.other-month { opacity: 0.3; background: #080a0f; }
+        .day-cell.today { border: 2px solid #ff0055 !important; }
 
-        .shift-badge { font-size: 0.7rem; font-weight: bold; padding: 3px 6px; border-radius: 4px; text-align: center; text-transform: uppercase; }
+        .day-number { font-size: 0.75rem; font-weight: bold; color: #fff; text-align: right; }
+        
+        .shift-info { display: flex; flex-direction: column; gap: 2px; }
+        .shift-name { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; padding: 2px 3px; border-radius: 3px; text-align: center; }
+        .shift-time { font-size: 0.55rem; text-align: center; color: var(--text-muted); }
+
+        /* Schicht-Farben Klassen */
         .shift-fruh { background: var(--fruh-bg); color: #79c0ff; border: 1px solid var(--fruh-border); }
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
         .shift-spat { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
-        .shift-frei { background: var(--frei-bg); color: #7ee787; border: 1px solid var(--frei-border); opacity: 0.7; }
+        .shift-frei { background: var(--frei-bg); color: #7ee787; border: 1px solid var(--frei-border); }
+
+        @media (max-width: 600px) {
+            .day-cell { min-height: 65px; padding: 4px 2px; }
+            .shift-time { display: none; /* Blendet die Uhrzeit auf sehr kleinen Handys aus, damit es nicht zu eng wird */ }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Arbeitsplan</h1>
-    <p class="subtitle">3-Wochen-Rhythmus (Mo – Fr Arbeit / Sa – So Frei)</p>
+    <h1>Monats-Schichtplan</h1>
+    <p class="subtitle">Mo–Fr Arbeit (3-Wochen-Rhythmus) / Sa–So Frei</p>
 </header>
 
 <div class="legend">
-    <div class="legend-item"><span class="dot fruh"></span> Frühschicht</div>
-    <div class="legend-item"><span class="dot nacht"></span> Nachtschicht</div>
-    <div class="legend-item"><span class="dot spat"></span> Spätschicht</div>
-    <div class="legend-item"><span class="dot frei"></span> Wochenende (Frei)</div>
+    <div class="legend-item"><span class="dot fruh"></span> Früh (05:55–14:00)</div>
+    <div class="legend-item"><span class="dot nacht"></span> Nacht (21:55–06:00)</div>
+    <div class="legend-item"><span class="dot spat"></span> Mittel (13:55–22:00)</div>
+    <div class="legend-item"><span class="dot frei"></span> Frei</div>
 </div>
 
 <div class="month-nav">
-    <button onclick="changeMonth(-1)">◀ Vorheriger</button>
+    <button onclick="changeMonth(-1)">◀ Zurück</button>
     <div class="month-title" id="monthTitle">Oktober 2026</div>
-    <button onclick="changeMonth(1)">Nächster ▶</button>
+    <button onclick="changeMonth(1)">Weiter ▶</button>
 </div>
 
-<div class="week-container" id="scheduleContainer"></div>
+<div class="calendar-card">
+    <div class="weekdays-header">
+        <div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
+    </div>
+    <div class="days-grid" id="daysGrid"></div>
+</div>
 
 <script>
 // Anker-Datum: Montag der Frühschicht-Woche (12.10.2026)
-const anchorDate = new Date(2026, 9, 12); // Oktober ist Monat index 9
-let currentDisplayDate = new Date(2026, 9, 1);
+const anchorDate = new Date(2026, 9, 12); 
+let currentDisplayDate = new Date(2026, 9, 13); // Startet im aktuellen Monat (Oktober 2026)
 
-const shiftCycle = ["fruh", "nacht", "spat"]; // 3-Wochen Rhythmus
-const shiftLabels = {
-    fruh: "Frühschicht",
-    nacht: "Nachtschicht",
-    spat: "Spätschicht",
-    frei: "Frei"
+const shiftCycle = ["fruh", "nacht", "spat"];
+const shiftData = {
+    fruh: { name: "Früh", time: "05:55–14:00", class: "shift-fruh" },
+    nacht: { name: "Nacht", time: "21:55–06:00", class: "shift-nacht" },
+    spat: { name: "Mittel", time: "13:55–22:00", class: "shift-spat" },
+    frei: { name: "Frei", time: "Wochenende", class: "shift-frei" }
 };
 
-const dayNames = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
 function getShiftForDate(date) {
-    const dayOfWeek = (date.getDay() + 6) % 7; // 0 = Montag, ..., 6 = Sonntag
-    if (dayOfWeek >= 5) {
-        return "frei"; // Samstag und Sonntag frei
-    }
+    const dayOfWeek = (date.getDay() + 6) % 7; // 0=Mo ... 6=So
+    if (dayOfWeek >= 5) return "frei";
 
-    // Differenz in Tagen zum Anker-Montag berechnen
-    const diffTime = date.getTime() - anchorDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
-    
-    // Wochen-Differenz berechnen
-    const diffWeeks = Math.floor(diffDays / 7);
-    
-    // Zyklus-Index berechnen (Modulo für positive/negative Wochen)
+    // Finde den Montag der jeweiligen Woche
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const mondayOfWeek = new Date(d.setDate(diff));
+    mondayOfWeek.setHours(0,0,0,0);
+
+    const anchorMonday = new Date(2026, 9, 12);
+    anchorMonday.setHours(0,0,0,0);
+
+    const diffTime = mondayOfWeek.getTime() - anchorMonday.getTime();
+    const diffWeeks = Math.round(diffTime / (1000 * 3600 * 24 * 7));
+
     let cycleIndex = diffWeeks % 3;
     if (cycleIndex < 0) cycleIndex += 3;
 
     return shiftCycle[cycleIndex];
 }
 
-function renderSchedule() {
-    const container = document.getElementById("scheduleContainer");
-    container.innerHTML = "";
+function renderCalendar() {
+    const grid = document.getElementById("daysGrid");
+    grid.innerHTML = "";
 
     const year = currentDisplayDate.getFullYear();
     const month = currentDisplayDate.getMonth();
@@ -137,69 +149,47 @@ function renderSchedule() {
     document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
 
     // Erster Tag des Monats
-    let firstDay = new Date(year, month, 1);
-    // Erster Montag der Kalenderansicht
-    let startDay = new Date(firstDay);
-    let dayOffset = (startDay.getDay() + 6) % 7;
-    startDay.setDate(startDay.getDate() - dayOffset);
+    const firstDayOfMonth = new Date(year, month, 1);
+    // Welcher Wochentag (0=Mo, ..., 6=So)
+    let startDayOffset = (firstDayOfMonth.getDay() + 6) % 7;
 
-    // Letzter Tag des Monats
-    let lastDay = new Date(year, month + 1, 0);
-
-    let runner = new Date(startDay);
+    // Start-Datum für das Raster (inkl. Tage vom Vormonat zur Auffüllung)
+    let runner = new Date(year, month, 1 - startDayOffset);
     const today = new Date();
+    today.setHours(0,0,0,0);
 
-    while (runner <= lastDay || (runner.getDay() + 6) % 7 !== 0) {
-        const weekCard = document.createElement("div");
-        weekCard.className = "week-card";
+    // Wir zeigen immer 6 volle Wochen (42 Tage) für eine saubere Monatsansicht
+    for (let i = 0; i < 42; i++) {
+        const cellDate = new Date(runner);
+        cellDate.setHours(0,0,0,0);
 
-        // KW ermitteln
-        const weekNum = getWeekNumber(runner);
-        
-        let daysHtml = "";
-        for (let i = 0; i < 7; i++) {
-            const shift = getShiftForDate(runner);
-            const isToday = runner.toDateString() === today.toDateString();
-            const dateNum = runner.getDate().toString().padStart(2, '0');
-            const monthNum = (runner.getMonth() + 1).toString().padStart(2, '0');
+        const isCurrentMonth = runner.getMonth() === month;
+        const isToday = cellDate.getTime() === today.getTime();
+        const shiftKey = getShiftForDate(runner);
+        const shift = shiftData[shiftKey];
 
-            daysHtml += `
-                <div class="day-box ${isToday ? 'today' : ''}">
-                    <div class="day-header">
-                        <span class="day-name">${dayNames[i]}</span>
-                        <span class="day-date">${dateNum}.${monthNum}.</span>
-                    </div>
-                    <div class="shift-badge shift-${shift}">${shiftLabels[shift]}</div>
-                </div>
-            `;
-            runner.setDate(runner.getDate() + 1);
-        }
+        const cell = document.createElement("div");
+        cell.className = `day-cell ${isCurrentMonth ? '' : 'other-month'} ${isToday ? 'today' : ''}`;
 
-        weekCard.innerHTML = `
-            <div class="week-header">
-                <span>Kalenderwoche ${weekNum}</span>
+        cell.innerHTML = `
+            <div class="day-number">${runner.getDate()}</div>
+            <div class="shift-info">
+                <div class="shift-name ${shift.class}">${shift.name}</div>
+                <div class="shift-time">${shift.time}</div>
             </div>
-            <div class="days-grid">${daysHtml}</div>
         `;
 
-        container.appendChild(weekCard);
+        grid.appendChild(cell);
+        runner.setDate(runner.getDate() + 1);
     }
 }
 
 function changeMonth(delta) {
     currentDisplayDate.setMonth(currentDisplayDate.getMonth() + delta);
-    renderSchedule();
+    renderCalendar();
 }
 
-function getWeekNumber(d) {
-    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-    var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-    var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-    return weekNo;
-}
-
-renderSchedule();
+renderCalendar();
 </script>
 
 </body>
