@@ -21,12 +21,12 @@
             --spat-bg: #5a3214;
             --spat-border: #f0883e;
 
-            /* Frei wieder in Grün */
+            /* Frei in Grün */
             --frei-bg: #12381b;
             --frei-border: #2ea043;
             --frei-text: #56d364;
 
-            /* Urlaub in auffälligem Gold/Gelb */
+            /* Urlaub in Gold/Gelb */
             --urlaub-bg: #4a3800;
             --urlaub-border: #e3b341;
             --urlaub-text: #ffdf5d;
@@ -79,10 +79,7 @@
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
         .shift-mittags { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
         
-        /* FREI IST WIEDER GRÜN */
         .shift-frei { background: var(--frei-bg); color: var(--frei-text); border: 1px solid var(--frei-border); }
-        
-        /* URLAUB IN GOLD/GELB */
         .shift-urlaub { background: var(--urlaub-bg); color: var(--urlaub-text); border: 1px solid var(--urlaub-border); font-size: 0.7rem; font-weight: 800; }
 
         @media (max-width: 600px) {
@@ -95,7 +92,7 @@
 
 <header>
     <h1>Monats-Schichtplan</h1>
-    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Live-Online-Urlaub</p>
+    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Live-Urlaub</p>
 </header>
 
 <div class="controls-bar">
@@ -110,7 +107,7 @@
         💡 <span>Urlaub eintragen:</span> Tippe auf Start- und Enddatum im Kalender.
     </div>
     <div class="action-row">
-        <button class="btn-action" onclick="loadOnlineVacation()">🔄 Live-Daten Laden</button>
+        <button class="btn-action" onclick="syncOnlineData()">🔄 Online Synchronisieren</button>
         <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Urlaub zurücksetzen</button>
     </div>
 </div>
@@ -143,9 +140,14 @@ const shiftData = {
 
 const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-const ONLINE_STORAGE_KEY = "leadtek86_schichtplan_v2";
-let vacationDays = [];
+const ONLINE_STORAGE_KEY = "leadtek86_schichtplan_v3";
+let vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
 let selectionStart = null;
+
+// Sofort rendern mit lokalen Daten, damit der Kalender sofort da ist
+renderCalendar();
+// Im Hintergrund online synchronisieren
+loadOnlineVacation();
 
 async function loadOnlineVacation() {
     try {
@@ -155,13 +157,11 @@ async function loadOnlineVacation() {
             const cleanData = data.replace(/^"|"$/g, '').replace(/\\"/g, '"');
             vacationDays = JSON.parse(cleanData);
             localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
-        } else {
-            vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+            renderCalendar();
         }
     } catch (e) {
-        vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+        console.log("Offline / Ladefehler");
     }
-    renderCalendar();
 }
 
 async function saveOnlineVacation() {
@@ -299,7 +299,10 @@ async function resetVacation() {
     }
 }
 
-loadOnlineVacation();
+function syncOnlineData() {
+    document.getElementById("infoBox").innerHTML = `🔄 <span>Lade Live-Daten...</span>`;
+    loadOnlineVacation();
+}
 </script>
 
 </body>
