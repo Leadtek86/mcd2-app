@@ -37,7 +37,7 @@
         .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .dot.fruh { background: var(--fruh-border); }
         .dot.nacht { background: var(--nacht-border); }
-        .dot.spat { background: var(--spat-border); }
+        .dot.mittags { background: var(--spat-border); }
         .dot.frei { background: var(--frei-border); }
 
         /* Navigation */
@@ -52,7 +52,7 @@
         
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         
-        .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 75px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
         .day-cell.other-month { opacity: 0.3; background: #080a0f; }
         .day-cell.today { border: 2px solid #ff0055 !important; }
 
@@ -60,17 +60,17 @@
         
         .shift-info { display: flex; flex-direction: column; gap: 2px; }
         .shift-name { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; padding: 2px 3px; border-radius: 3px; text-align: center; }
-        .shift-time { font-size: 0.55rem; text-align: center; color: var(--text-muted); }
+        .shift-time { font-size: 0.6rem; text-align: center; color: #fff; font-weight: 500; }
 
         /* Schicht-Farben Klassen */
         .shift-fruh { background: var(--fruh-bg); color: #79c0ff; border: 1px solid var(--fruh-border); }
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
-        .shift-spat { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
+        .shift-mittags { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
         .shift-frei { background: var(--frei-bg); color: #7ee787; border: 1px solid var(--frei-border); }
 
         @media (max-width: 600px) {
-            .day-cell { min-height: 65px; padding: 4px 2px; }
-            .shift-time { display: none; /* Blendet die Uhrzeit auf sehr kleinen Handys aus, damit es nicht zu eng wird */ }
+            .day-cell { min-height: 72px; padding: 4px 2px; }
+            .shift-time { font-size: 0.55rem; }
         }
     </style>
 </head>
@@ -84,7 +84,7 @@
 <div class="legend">
     <div class="legend-item"><span class="dot fruh"></span> Früh (05:55–14:00)</div>
     <div class="legend-item"><span class="dot nacht"></span> Nacht (21:55–06:00)</div>
-    <div class="legend-item"><span class="dot spat"></span> Mittel (13:55–22:00)</div>
+    <div class="legend-item"><span class="dot mittags"></span> Mittags (13:55–22:00)</div>
     <div class="legend-item"><span class="dot frei"></span> Frei</div>
 </div>
 
@@ -104,13 +104,13 @@
 <script>
 // Anker-Datum: Montag der Frühschicht-Woche (12.10.2026)
 const anchorDate = new Date(2026, 9, 12); 
-let currentDisplayDate = new Date(2026, 9, 13); // Startet im aktuellen Monat (Oktober 2026)
+let currentDisplayDate = new Date(2026, 9, 13);
 
-const shiftCycle = ["fruh", "nacht", "spat"];
+const shiftCycle = ["fruh", "nacht", "mittags"];
 const shiftData = {
-    fruh: { name: "Früh", time: "05:55–14:00", class: "shift-fruh" },
-    nacht: { name: "Nacht", time: "21:55–06:00", class: "shift-nacht" },
-    spat: { name: "Mittel", time: "13:55–22:00", class: "shift-spat" },
+    fruh: { name: "Frühschicht", time: "05:55 – 14:00", class: "shift-fruh" },
+    nacht: { name: "Nachtschicht", time: "21:55 – 06:00", class: "shift-nacht" },
+    mittags: { name: "Mittagschicht", time: "13:55 – 22:00", class: "shift-mittags" },
     frei: { name: "Frei", time: "Wochenende", class: "shift-frei" }
 };
 
@@ -120,7 +120,6 @@ function getShiftForDate(date) {
     const dayOfWeek = (date.getDay() + 6) % 7; // 0=Mo ... 6=So
     if (dayOfWeek >= 5) return "frei";
 
-    // Finde den Montag der jeweiligen Woche
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
@@ -148,17 +147,13 @@ function renderCalendar() {
 
     document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
 
-    // Erster Tag des Monats
     const firstDayOfMonth = new Date(year, month, 1);
-    // Welcher Wochentag (0=Mo, ..., 6=So)
     let startDayOffset = (firstDayOfMonth.getDay() + 6) % 7;
 
-    // Start-Datum für das Raster (inkl. Tage vom Vormonat zur Auffüllung)
     let runner = new Date(year, month, 1 - startDayOffset);
     const today = new Date();
     today.setHours(0,0,0,0);
 
-    // Wir zeigen immer 6 volle Wochen (42 Tage) für eine saubere Monatsansicht
     for (let i = 0; i < 42; i++) {
         const cellDate = new Date(runner);
         cellDate.setHours(0,0,0,0);
