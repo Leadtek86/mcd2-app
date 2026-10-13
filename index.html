@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monats-Schichtplan & Online-Urlaub</title>
+    <title>Monats-Schichtplan</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -20,13 +20,16 @@
             --nacht-border: #a371f7;
             --spat-bg: #5a3214;
             --spat-border: #f0883e;
-            --frei-bg: #1e2229;
-            --frei-border: #484f58;
 
-            /* Urlaub jetzt in Knallgrün */
-            --urlaub-bg: #12381b;
-            --urlaub-border: #2ea043;
-            --urlaub-text: #56d364;
+            /* Frei wieder in Grün */
+            --frei-bg: #12381b;
+            --frei-border: #2ea043;
+            --frei-text: #56d364;
+
+            /* Urlaub in auffälligem Gold/Gelb */
+            --urlaub-bg: #4a3800;
+            --urlaub-border: #e3b341;
+            --urlaub-text: #ffdf5d;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -36,7 +39,6 @@
         h1 { color: var(--accent-gold); font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
         p.subtitle { color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; }
 
-        /* Steuerung & Anleitung */
         .controls-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
         .legend { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
         .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.7rem; background: var(--card-bg); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border-color); }
@@ -47,44 +49,40 @@
         .dot.frei { background: var(--frei-border); }
         .dot.urlaub { background: var(--urlaub-border); }
 
-        .info-box { background: var(--card-bg); border: 1px solid var(--urlaub-border); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; }
-        .info-box span { color: var(--urlaub-text); font-weight: bold; }
+        .info-box { background: var(--card-bg); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; }
+        .info-box span { color: var(--accent-gold); font-weight: bold; }
 
         .action-row { display: flex; justify-content: center; gap: 8px; }
         .btn-action { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
-        .btn-action:hover { background: #30363d; border-color: var(--urlaub-border); }
+        .btn-action:hover { background: #30363d; border-color: var(--accent-gold); }
 
-        /* Navigation */
         .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); }
         .month-nav button { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .month-title { font-weight: bold; font-size: 0.95rem; color: #fff; }
 
-        /* Monats-Kalender Grid */
         .calendar-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; }
-        
         .weekdays-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; text-align: center; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); }
-        
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         
         .day-cell { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 4px; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; cursor: pointer; transition: border-color 0.2s; }
-        .day-cell:hover { border-color: var(--urlaub-border); }
+        .day-cell:hover { border-color: var(--accent-gold); }
         .day-cell.other-month { opacity: 0.3; background: #080a0f; }
         .day-cell.today { border: 2px solid #ff0055 !important; }
-        .day-cell.selecting { border: 2px dashed var(--urlaub-border) !important; background: #0e2915; }
+        .day-cell.selecting { border: 2px dashed var(--urlaub-border) !important; background: #281e00; }
 
         .day-number { font-size: 0.75rem; font-weight: bold; color: #fff; text-align: right; }
-        
         .shift-info { display: flex; flex-direction: column; gap: 2px; }
         .shift-name { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; padding: 2px 3px; border-radius: 3px; text-align: center; }
         .shift-time { font-size: 0.6rem; text-align: center; color: #fff; font-weight: 500; }
 
-        /* Schicht-Farben Klassen */
         .shift-fruh { background: var(--fruh-bg); color: #79c0ff; border: 1px solid var(--fruh-border); }
         .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
         .shift-mittags { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
-        .shift-frei { background: var(--frei-bg); color: #8b949e; border: 1px solid var(--frei-border); }
         
-        /* GRÜNER URLAUB */
+        /* FREI IST WIEDER GRÜN */
+        .shift-frei { background: var(--frei-bg); color: var(--frei-text); border: 1px solid var(--frei-border); }
+        
+        /* URLAUB IN GOLD/GELB */
         .shift-urlaub { background: var(--urlaub-bg); color: var(--urlaub-text); border: 1px solid var(--urlaub-border); font-size: 0.7rem; font-weight: 800; }
 
         @media (max-width: 600px) {
@@ -105,14 +103,14 @@
         <div class="legend-item"><span class="dot fruh"></span> Früh (05:55–14:00)</div>
         <div class="legend-item"><span class="dot nacht"></span> Nacht (21:55–06:00)</div>
         <div class="legend-item"><span class="dot mittags"></span> Mittags (13:55–22:00)</div>
-        <div class="legend-item"><span class="dot frei"></span> Frei</div>
-        <div class="legend-item"><span class="dot urlaub"></span> Urlaub (Grün)</div>
+        <div class="legend-item"><span class="dot frei"></span> Frei (Grün)</div>
+        <div class="legend-item"><span class="dot urlaub"></span> Urlaub</div>
     </div>
     <div class="info-box" id="infoBox">
         💡 <span>Urlaub eintragen:</span> Tippe auf Start- und Enddatum im Kalender.
     </div>
     <div class="action-row">
-        <button class="btn-action" onclick="syncOnlineData()">🔄 Online Synchronisieren</button>
+        <button class="btn-action" onclick="loadOnlineVacation()">🔄 Live-Daten Laden</button>
         <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Urlaub zurücksetzen</button>
     </div>
 </div>
@@ -145,21 +143,22 @@ const shiftData = {
 
 const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-// Kostenlose Online-Speicher ID für deinen persönlichen Schichtplan
-const ONLINE_STORAGE_KEY = "leadtek86_schichtplan_urlaub";
+const ONLINE_STORAGE_KEY = "leadtek86_schichtplan_v2";
 let vacationDays = [];
 let selectionStart = null;
 
-// Lade Urlaub beim Start aus dem Online-Speicher
 async function loadOnlineVacation() {
     try {
-        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${ONLINE_STORAGE_KEY}`);
-        const data = await response.json();
-        if (data) {
-            vacationDays = JSON.parse(data);
+        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${ONLINE_STORAGE_KEY}?t=${Date.now()}`);
+        const data = await response.text();
+        if (data && data !== "null" && data.length > 0) {
+            const cleanData = data.replace(/^"|"$/g, '').replace(/\\"/g, '"');
+            vacationDays = JSON.parse(cleanData);
+            localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+        } else {
+            vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
         }
     } catch (e) {
-        // Fallback falls offline
         vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
     }
     renderCalendar();
@@ -168,9 +167,10 @@ async function loadOnlineVacation() {
 async function saveOnlineVacation() {
     localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
     try {
-        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/PostValue/${ONLINE_STORAGE_KEY}/${encodeURIComponent(JSON.stringify(vacationDays))}`, { method: 'POST' });
+        const payload = JSON.stringify(vacationDays);
+        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/PostValue/${ONLINE_STORAGE_KEY}/${encodeURIComponent(payload)}`, { method: 'POST' });
     } catch (e) {
-        console.log("Online-Speicherung fehlgeschlagen.");
+        console.log("Online-Speicherung fehlgeschlagen");
     }
 }
 
@@ -253,7 +253,7 @@ function renderCalendar() {
 async function handleDateClick(dateStr) {
     if (!selectionStart) {
         selectionStart = dateStr;
-        document.getElementById("infoBox").innerHTML = `💡 <span>Start gewählt (${dateStr}).</span> Jetzt Enddatum anklicken!`;
+        document.getElementById("infoBox").innerHTML = `💡 <span>Start: ${dateStr}</span> – Tippe nun das Enddatum an!`;
         renderCalendar();
     } else {
         let start = new Date(selectionStart);
@@ -275,11 +275,11 @@ async function handleDateClick(dateStr) {
         }
 
         selectionStart = null;
-        document.getElementById("infoBox").innerHTML = `⏳ <span>Wird online gespeichert...</span>`;
+        document.getElementById("infoBox").innerHTML = `⏳ <span>Speichere online...</span>`;
         renderCalendar();
 
         await saveOnlineVacation();
-        document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub live gespeichert!</span> Alle können ihn jetzt sehen.`;
+        document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub gespeichert!</span> Für alle Geräte sichtbar.`;
         renderCalendar();
     }
 }
@@ -290,21 +290,15 @@ function changeMonth(delta) {
 }
 
 async function resetVacation() {
-    if (confirm("Möchtest du wirklich alle Urlaube löschen? Das wird auch online aktualisiert.")) {
+    if (confirm("Möchtest du alle eingetragenen Urlaubstage löschen?")) {
         vacationDays = [];
         await saveOnlineVacation();
         selectionStart = null;
-        document.getElementById("infoBox").innerHTML = `💡 <span>Urlaub gelöscht.</span> Tippe auf Start- und Enddatum für neuen Urlaub.`;
+        document.getElementById("infoBox").innerHTML = `💡 <span>Urlaub gelöscht.</span>`;
         renderCalendar();
     }
 }
 
-function syncOnlineData() {
-    document.getElementById("infoBox").innerHTML = `🔄 <span>Lade Daten online...</span>`;
-    loadOnlineVacation();
-}
-
-// Beim Starten sofort Daten online laden
 loadOnlineVacation();
 </script>
 
