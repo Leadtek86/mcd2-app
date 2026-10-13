@@ -152,7 +152,7 @@
         try {
             const { data, error } = await supabaseClient
                 .from('vacation_days')
-                .select('*')
+                .select('dates')
                 .eq('id', 'shared_plan')
                 .maybeSingle();
 
@@ -161,35 +161,19 @@
             } else {
                 vacationDays = [];
             }
+            renderCalendar();
+            document.getElementById("infoBox").innerHTML = `✅ <span>Live-Daten geladen!</span>`;
         } catch (e) {
             console.error("Ladefehler:", e);
+            document.getElementById("infoBox").innerHTML = `⚠️ <span>Fehler beim Laden!</span>`;
         }
-        renderCalendar();
-        document.getElementById("infoBox").innerHTML = `✅ <span>Live-Daten geladen!</span>`;
     }
 
     async function saveCloudData() {
         try {
-            // Erst prüfen, ob Zeile existiert, um sauber zu aktualisieren oder einzufügen
-            const { data } = await supabaseClient
+            const { error } = await supabaseClient
                 .from('vacation_days')
-                .select('id')
-                .eq('id', 'shared_plan')
-                .maybeSingle();
-
-            let error;
-            if (data) {
-                const res = await supabaseClient
-                    .from('vacation_days')
-                    .update({ dates: vacationDays })
-                    .eq('id', 'shared_plan');
-                error = res.error;
-            } else {
-                const res = await supabaseClient
-                    .from('vacation_days')
-                    .insert([{ id: 'shared_plan', dates: vacationDays }]);
-                error = res.error;
-            }
+                .upsert({ id: 'shared_plan', dates: vacationDays }, { onConflict: 'id' });
 
             if (error) {
                 console.error("Supabase Speicherfehler:", error);
