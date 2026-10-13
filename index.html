@@ -52,7 +52,7 @@
         .info-box { background: var(--card-bg); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; }
         .info-box span { color: var(--accent-gold); font-weight: bold; }
 
-        .action-row { display: flex; justify-content: center; gap: 8px; }
+        .action-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .btn-action { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
         .btn-action:hover { background: #30363d; border-color: var(--accent-gold); }
 
@@ -92,7 +92,7 @@
 
 <header>
     <h1>Monats-Schichtplan</h1>
-    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Live-Urlaub</p>
+    <p class="subtitle">Mo–Fr Arbeit / Sa–So Frei & Urlaubsverwaltung</p>
 </header>
 
 <div class="controls-bar">
@@ -107,7 +107,6 @@
         💡 <span>Urlaub eintragen:</span> Tippe auf Start- und Enddatum im Kalender.
     </div>
     <div class="action-row">
-        <button class="btn-action" onclick="syncOnlineData()">🔄 Online Synchronisieren</button>
         <button class="btn-action" onclick="resetVacation()" style="color: #ff7b72;">🗑️ Urlaub zurücksetzen</button>
     </div>
 </div>
@@ -140,8 +139,13 @@ const shiftData = {
 
 const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-const ONLINE_STORAGE_KEY = "leadtek86_schichtplan_v3";
-let vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+let vacationDays = [];
+try {
+    vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+} catch (e) {
+    vacationDays = [];
+}
+
 let selectionStart = null;
 
 function getCalculatedShift(date) {
@@ -220,32 +224,7 @@ function renderCalendar() {
     }
 }
 
-async function loadOnlineVacation() {
-    try {
-        const response = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${ONLINE_STORAGE_KEY}?t=${Date.now()}`);
-        const data = await response.text();
-        if (data && data !== "null" && data.length > 0) {
-            const cleanData = data.replace(/^"|"$/g, '').replace(/\\"/g, '"');
-            vacationDays = JSON.parse(cleanData);
-            localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
-            renderCalendar();
-        }
-    } catch (e) {
-        console.log("Offline / Ladefehler");
-    }
-}
-
-async function saveOnlineVacation() {
-    localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
-    try {
-        const payload = JSON.stringify(vacationDays);
-        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/PostValue/${ONLINE_STORAGE_KEY}/${encodeURIComponent(payload)}`, { method: 'POST' });
-    } catch (e) {
-        console.log("Online-Speicherung fehlgeschlagen");
-    }
-}
-
-async function handleDateClick(dateStr) {
+function handleDateClick(dateStr) {
     if (!selectionStart) {
         selectionStart = dateStr;
         document.getElementById("infoBox").innerHTML = `💡 <span>Start: ${dateStr}</span> – Tippe nun das Enddatum an!`;
@@ -270,11 +249,8 @@ async function handleDateClick(dateStr) {
         }
 
         selectionStart = null;
-        document.getElementById("infoBox").innerHTML = `⏳ <span>Speichere online...</span>`;
-        renderCalendar();
-
-        await saveOnlineVacation();
-        document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub gespeichert!</span> Für alle Geräte sichtbar.`;
+        localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+        document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub erfolgreich eingetragen!</span>`;
         renderCalendar();
     }
 }
@@ -284,24 +260,18 @@ function changeMonth(delta) {
     renderCalendar();
 }
 
-async function resetVacation() {
+function resetVacation() {
     if (confirm("Möchtest du alle eingetragenen Urlaubstage löschen?")) {
         vacationDays = [];
-        await saveOnlineVacation();
+        localStorage.removeItem("myVacationDays");
         selectionStart = null;
         document.getElementById("infoBox").innerHTML = `💡 <span>Urlaub gelöscht.</span>`;
         renderCalendar();
     }
 }
 
-function syncOnlineData() {
-    document.getElementById("infoBox").innerHTML = `🔄 <span>Lade Live-Daten...</span>`;
-    loadOnlineVacation();
-}
-
-// Sofort beim Start rendern, damit der Kalender sofort da ist
+// Kalender sofort laden
 renderCalendar();
-loadOnlineVacation();
 </script>
 
 </body>
