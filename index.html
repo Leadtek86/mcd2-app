@@ -126,13 +126,11 @@
 </div>
 
 <script>
-    // Feste Supabase-Konfiguration
     const SUPABASE_URL = "https://lbjpkereemplchdaltpz.supabase.co";
     const SUPABASE_ANON_KEY = "Sb_publishable_9cRURwHhw93Qe9nomNXrLQ_F1bW4N_G";
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const anchorDate = new Date(2026, 9, 12); 
     let currentDisplayDate = new Date(2026, 9, 13);
 
     const shiftCycle = ["fruh", "nacht", "mittags"];
@@ -156,27 +154,52 @@
                 .from('vacation_days')
                 .select('*')
                 .eq('id', 'shared_plan')
-                .single();
+                .maybeSingle();
 
             if (data && data.dates) {
                 vacationDays = data.dates;
-                localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
+            } else {
+                vacationDays = [];
             }
         } catch (e) {
-            vacationDays = JSON.parse(localStorage.getItem("myVacationDays")) || [];
+            console.error("Ladefehler:", e);
         }
         renderCalendar();
-        document.getElementById("infoBox").innerHTML = `✅ <span>Live-Daten aktuell!</span>`;
+        document.getElementById("infoBox").innerHTML = `✅ <span>Live-Daten geladen!</span>`;
     }
 
     async function saveCloudData() {
-        localStorage.setItem("myVacationDays", JSON.stringify(vacationDays));
         try {
-            await supabaseClient
+            // Erst prüfen, ob Zeile existiert, um sauber zu aktualisieren oder einzufügen
+            const { data } = await supabaseClient
                 .from('vacation_days')
-                .upsert({ id: 'shared_plan', dates: vacationDays });
+                .select('id')
+                .eq('id', 'shared_plan')
+                .maybeSingle();
+
+            let error;
+            if (data) {
+                const res = await supabaseClient
+                    .from('vacation_days')
+                    .update({ dates: vacationDays })
+                    .eq('id', 'shared_plan');
+                error = res.error;
+            } else {
+                const res = await supabaseClient
+                    .from('vacation_days')
+                    .insert([{ id: 'shared_plan', dates: vacationDays }]);
+                error = res.error;
+            }
+
+            if (error) {
+                console.error("Supabase Speicherfehler:", error);
+                document.getElementById("infoBox").innerHTML = `⚠️ <span>Fehler beim Speichern in Cloud!</span>`;
+            } else {
+                document.getElementById("infoBox").innerHTML = `✅ <span>Erfolgreich in Cloud gespeichert!</span>`;
+            }
         } catch (e) {
-            console.log("Fehler beim Speichern");
+            console.error("Netzwerkfehler:", e);
+            document.getElementById("infoBox").innerHTML = `⚠️ <span>Verbindungsfehler!</span>`;
         }
     }
 
@@ -261,10 +284,9 @@
         if (vacationDays.includes(dateStr)) {
             vacationDays = vacationDays.filter(d => d !== dateStr);
             selectionStart = null;
-            document.getElementById("infoBox").innerHTML = `⏳ <span>Speichere...</span>`;
+            document.getElementById("infoBox").innerHTML = `⏳ <span>Lösche Urlaub...</span>`;
             renderCalendar();
             await saveCloudData();
-            document.getElementById("infoBox").innerHTML = `🗑️ <span>Urlaubstag ${dateStr} entfernt.</span>`;
             renderCalendar();
             return;
         }
@@ -297,7 +319,6 @@
             renderCalendar();
 
             await saveCloudData();
-            document.getElementById("infoBox").innerHTML = `✅ <span>Urlaub live synchronisiert!</span>`;
             renderCalendar();
         }
     }
@@ -310,10 +331,9 @@
     async function resetVacation() {
         if (confirm("Möchtest du wirklich alle Urlaubstage löschen?")) {
             vacationDays = [];
-            document.getElementById("infoBox").innerHTML = `⏳ <span>Lösche...</span>`;
+            document.getElementById("infoBox").innerHTML = `⏳ <span>Lösche alles...</span>`;
             renderCalendar();
             await saveCloudData();
-            document.getElementById("infoBox").innerHTML = `💡 <span>Alles zurückgesetzt.</span>`;
             renderCalendar();
         }
     }
