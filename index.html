@@ -48,7 +48,7 @@
         .dot.frei { background: var(--frei-border); }
         .dot.urlaub { background: var(--urlaub-border); }
 
-        .info-box { background: var(--card-bg); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; width: 100%; word-break: break-all; }
+        .info-box { background: var(--card-bg); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; color: #fff; width: 100%; }
         .info-box span { color: var(--accent-gold); font-weight: bold; }
 
         .action-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
@@ -127,7 +127,7 @@
 
 <script>
     const SUPABASE_URL = "https://lbjpkereemplchdaltpz.supabase.co";
-    const SUPABASE_ANON_KEY = "Sb_publishable_9cRURwHhw93Qe9nomNXrLQ_F1bW4N_G";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxianBrZXJlZW1wbGNoZGFsdHB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDMyNjUsImV4cCI6MjEwNzQ3OTI2NX0.iFPEv3qyhgiLdU55Iday-HssYZdDbYaQolpvglcLcpw";
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -157,7 +157,8 @@
                 .maybeSingle();
 
             if (error) {
-                document.getElementById("infoBox").innerHTML = `⚠️ <span>Ladefehler: ${error.message}</span>`;
+                console.error("Ladefehler:", error);
+                document.getElementById("infoBox").innerHTML = `⚠️ <span>Ladefehler aufgetreten</span>`;
                 return;
             }
 
@@ -169,7 +170,8 @@
             renderCalendar();
             document.getElementById("infoBox").innerHTML = `✅ <span>Live-Daten geladen!</span>`;
         } catch (e) {
-            document.getElementById("infoBox").innerHTML = `⚠️ <span>Netzwerkfehler beim Laden</span>`;
+            console.error("Netzwerkfehler:", e);
+            document.getElementById("infoBox").innerHTML = `⚠️ <span>Verbindungsfehler beim Laden</span>`;
         }
     }
 
@@ -181,7 +183,7 @@
 
             if (error) {
                 console.error("Supabase Fehler:", error);
-                document.getElementById("infoBox").innerHTML = `⚠️ <span>Fehler: ${error.message}</span>`;
+                document.getElementById("infoBox").innerHTML = `⚠️ <span>Fehler beim Speichern: ${error.message}</span>`;
             } else {
                 document.getElementById("infoBox").innerHTML = `✅ <span>Erfolgreich in Cloud gespeichert!</span>`;
             }
