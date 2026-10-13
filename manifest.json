@@ -1,15 +1,17 @@
 {
-  "name": "Schichtplan 2026",
+  "name": "Schichtplan",
   "short_name": "Schichtplan",
-  "start_url": "./index.html",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#050507",
-  "theme_color": "#ff2200",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "Hintergrund.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg"
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
     }
   ]
 }
