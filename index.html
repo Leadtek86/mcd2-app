@@ -12,12 +12,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: #0c0d10;
+            /* Das gewählte rot-schwarze Wallpaper direkt als nativer Hintergrund */
+            background-color: #050507;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(30, 32, 40, 0.6) 0%, transparent 70%),
-                linear-gradient(to top, rgba(180, 25, 0, 0.8) 0%, rgba(100, 10, 0, 0.3) 15%, transparent 40%),
-                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
-            background-size: 100% 100%, 100% 100%, 4px 4px;
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)),
+                url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='); /* Platzhalter für den flüssigen Base64-Stream, im folgenden Skript voll eingebettet */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -29,12 +31,13 @@
         .app-container {
             width: 100%;
             max-width: 440px;
-            border: 2px solid rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.85);
             border-radius: 24px;
             padding: 16px 10px 20px 10px;
-            background: rgba(12, 13, 16, 0.85);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0,0,0,0.5);
+            background: rgba(10, 10, 14, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(255, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
         }
@@ -48,8 +51,8 @@
         }
 
         .nav-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             color: #fff;
             width: 30px;
             height: 30px;
@@ -66,12 +69,12 @@
         }
 
         .year-text {
-            color: #ff1a00;
+            color: #ff2200;
             font-size: 1.4rem;
             font-weight: 800;
             letter-spacing: 2px;
             line-height: 1;
-            text-shadow: 0 0 12px rgba(255, 26, 0, 0.4);
+            text-shadow: 0 0 14px rgba(255, 34, 0, 0.6);
         }
 
         .month-script {
@@ -80,20 +83,20 @@
             color: #ffffff;
             line-height: 1.1;
             margin-top: -2px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
         }
 
         .status-banner {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             padding: 5px 8px;
             border-radius: 8px;
             font-size: 0.65rem;
             text-align: center;
             margin-bottom: 10px;
-            color: #aaa;
+            color: #ccc;
         }
-        .status-banner span { color: #ff4d4d; font-weight: bold; }
+        .status-banner span { color: #ff5555; font-weight: bold; }
 
         .action-buttons {
             display: flex;
@@ -103,8 +106,8 @@
 
         .btn {
             flex: 1;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
             padding: 5px;
             border-radius: 6px;
@@ -112,13 +115,13 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .btn.danger { color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3); }
+        .btn.danger { color: #ff7b72; border-color: rgba(255, 123, 114, 0.3); }
 
         .calendar-card {
-            border: 1.5px solid rgba(255, 255, 255, 0.8);
+            border: 1.5px solid rgba(255, 255, 255, 0.75);
             border-radius: 12px;
             padding: 4px;
-            background: rgba(8, 9, 12, 0.6);
+            background: rgba(8, 9, 12, 0.5);
             width: 100%;
         }
 
@@ -143,7 +146,7 @@
         }
 
         .day-cell {
-            background: rgba(15, 18, 24, 0.7);
+            background: rgba(15, 18, 24, 0.65);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 6px;
             padding: 2px;
@@ -159,8 +162,8 @@
 
         .day-cell:active { transform: scale(0.95); }
         .day-cell.other-month { opacity: 0.2; }
-        .day-cell.today { border-color: #ff1a00 !important; box-shadow: 0 0 6px rgba(255, 26, 0, 0.4); }
-        .day-cell.selecting { border: 2px dashed #ff4d4d !important; background: rgba(255, 77, 77, 0.15); }
+        .day-cell.today { border-color: #ff2200 !important; box-shadow: 0 0 8px rgba(255, 34, 0, 0.5); }
+        .day-cell.selecting { border: 2px dashed #ff5555 !important; background: rgba(255, 85, 85, 0.15); }
 
         .day-header-row {
             width: 100%;
@@ -213,11 +216,11 @@
         }
 
         /* Schicht-Farben */
-        .s-fruh { background: #112a46; color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.3); }
-        .s-nacht { background: #231238; color: #bc8cff; border: 1px solid rgba(188, 140, 255, 0.3); }
-        .s-mittags { background: #381f0d; color: #ffa657; border: 1px solid rgba(255, 166, 87, 0.3); }
-        .s-frei { background: #0d2e1c; color: #56d364; border: 1px solid rgba(46, 160, 67, 0.4); }
-        .s-urlaub { background: #0e4429; color: #7ee787; border: 1px solid rgba(63, 185, 80, 0.6); font-weight: 900; }
+        .s-fruh { background: rgba(17, 42, 70, 0.85); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.35); }
+        .s-nacht { background: rgba(35, 18, 56, 0.85); color: #bc8cff; border: 1px solid rgba(188, 140, 255, 0.35); }
+        .s-mittags { background: rgba(56, 31, 13, 0.85); color: #ffa657; border: 1px solid rgba(255, 166, 87, 0.35); }
+        .s-frei { background: rgba(13, 46, 28, 0.85); color: #56d364; border: 1px solid rgba(46, 160, 67, 0.45); }
+        .s-urlaub { background: rgba(14, 68, 41, 0.9); color: #7ee787; border: 1px solid rgba(63, 185, 80, 0.7); font-weight: 900; }
     </style>
 </head>
 <body>
