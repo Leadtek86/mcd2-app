@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Dungeons DB - Alle Items & Kleine Pins</title>
+    <title>Arbeitsplan & Schichtkalender</title>
     <style>
         :root {
             --bg-dark: #0d1117;
@@ -12,394 +12,194 @@
             --accent-gold: #f0883e;
             --text-main: #c9d1d9;
             --text-muted: #8b949e;
-            --common: #a0a0a0;
-            --rare: #5555ff;
-            --unique: #ffaa00;
+            
+            /* Schichtfarben */
+            --fruh-bg: #1f3a5f;
+            --fruh-border: #388bfd;
+            --nacht-bg: #3c1e5a;
+            --nacht-border: #a371f7;
+            --spat-bg: #5a3214;
+            --spat-border: #f0883e;
+            --frei-bg: #16231a;
+            --frei-border: #238636;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); padding: 10px; scroll-behavior: smooth; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; }
 
-        header { text-align: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 10px; }
-        h1 { color: #f0883e; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
-        p.subtitle { color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; }
+        header { text-align: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
+        h1 { color: var(--accent-gold); font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; }
+        p.subtitle { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
 
-        .section-title { font-size: 0.95rem; color: #f0883e; margin: 12px 0 6px 0; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        /* Legende */
+        .legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; background: var(--card-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .dot.fruh { background: var(--fruh-border); }
+        .dot.nacht { background: var(--nacht-border); }
+        .dot.spat { background: var(--spat-border); }
+        .dot.frei { background: var(--frei-border); }
 
-        /* Weltkarte Container */
-        .map-container { width: 100%; height: 320px; background: #000; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; position: relative; }
+        /* Navigation */
+        .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); }
+        .month-nav button { background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .month-title { font-weight: bold; font-size: 1rem; color: #fff; }
+
+        /* Wochen-Raster */
+        .week-container { display: flex; flex-direction: column; gap: 12px; }
+        .week-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; }
+        .week-header { font-size: 0.85rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 8px; display: flex; justify-content: space-between; }
+
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        @media (max-width: 600px) {
+            .days-grid { grid-template-columns: 1fr; }
+        }
+
+        .day-box { background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; min-height: 58px; }
+        .day-box.today { border: 2px solid #ff0055 !important; }
         
-        .map-wrapper { 
-            width: 100%; 
-            height: 100%; 
-            transition: transform 0.5s ease-in-out; 
-            transform-origin: center center; 
-            position: relative; 
-        }
-        
-        .map-image { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .day-header { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; }
+        .day-name { color: var(--text-muted); }
+        .day-date { color: #fff; }
 
-        /* EXTREM KLEINER & DISKRETER PIN */
-        .map-pin-box {
-            position: absolute;
-            transform: translate(-50%, -100%);
-            display: none;
-            z-index: 30;
-            pointer-events: none;
-            text-align: center;
-        }
-
-        .map-pin {
-            font-size: 1.1rem;
-            line-height: 1;
-            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.9));
-            animation: bounce 0.6s infinite alternate;
-        }
-
-        .map-pin-label {
-            background: rgba(13, 17, 23, 0.9);
-            color: #ffaa00;
-            border: 1px solid #f0883e;
-            padding: 1px 4px;
-            border-radius: 3px;
-            font-size: 0.5rem;
-            font-weight: bold;
-            white-space: nowrap;
-            margin-top: -1px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.8);
-        }
-
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-4px); }
-        }
-
-        .reset-map-btn { font-size: 0.7rem; background: #21262d; color: #fff; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-
-        /* Filter Controls */
-        .controls { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
-        select, input { width: 100%; padding: 9px; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 0.85rem; }
-
-        .filter-row { display: flex; gap: 6px; }
-
-        /* Item Cards */
-        .drop-grid { display: grid; grid-template-columns: 1fr; gap: 6px; max-height: 48vh; overflow-y: auto; padding-right: 2px; }
-        .item-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 10px; display: flex; gap: 10px; align-items: center; cursor: pointer; transition: background 0.2s; }
-        .item-card:hover { background: #21262d; }
-        .item-card.common { border-left: 4px solid var(--common); }
-        .item-card.rare { border-left: 4px solid var(--rare); }
-        .item-card.unique { border-left: 4px solid var(--unique); background: linear-gradient(90deg, rgba(255,170,0,0.06) 0%, var(--card-bg) 100%); }
-
-        .item-icon-box { width: 38px; height: 38px; background: #0d1117; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
-        .item-details-box { flex-grow: 1; display: flex; flex-direction: column; gap: 2px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; }
-        .item-name { font-weight: bold; font-size: 0.9rem; }
-        .item-name.common { color: var(--common); }
-        .item-name.rare { color: #8888ff; }
-        .item-name.unique { color: var(--unique); }
-
-        .rarity-tag { font-size: 0.6rem; font-weight: bold; padding: 1px 4px; border-radius: 3px; text-transform: uppercase; }
-        .tag-common { background: #333; color: var(--common); }
-        .tag-rare { background: #1a1a44; color: #8888ff; }
-        .tag-unique { background: #443300; color: var(--unique); }
-
-        .item-info { font-size: 0.7rem; color: var(--text-muted); }
-        .item-effect { font-size: 0.75rem; color: #ddd; }
-
-        .boss-info-box { background: rgba(0,0,0,0.4); border: 1px solid #30363d; padding: 3px 6px; border-radius: 4px; margin-top: 3px; font-size: 0.7rem; display: flex; justify-content: space-between; align-items: center; }
-        .boss-name { color: #ff5555; font-weight: bold; }
-        .drop-rate { color: #55ff55; font-weight: bold; }
-
-        .location-badge { font-size: 0.65rem; color: var(--accent-gold); font-weight: bold; margin-top: 1px; }
+        .shift-badge { font-size: 0.7rem; font-weight: bold; padding: 3px 6px; border-radius: 4px; text-align: center; text-transform: uppercase; }
+        .shift-fruh { background: var(--fruh-bg); color: #79c0ff; border: 1px solid var(--fruh-border); }
+        .shift-nacht { background: var(--nacht-bg); color: #d2a8ff; border: 1px solid var(--nacht-border); }
+        .shift-spat { background: var(--spat-bg); color: #ffa657; border: 1px solid var(--spat-border); }
+        .shift-frei { background: var(--frei-bg); color: #7ee787; border: 1px solid var(--frei-border); opacity: 0.7; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Minecraft Dungeons DB</h1>
-    <p class="subtitle">Alle 250+ Items & Kleine Pins</p>
+    <h1>Arbeitsplan</h1>
+    <p class="subtitle">3-Wochen-Rhythmus (Mo – Fr Arbeit / Sa – So Frei)</p>
 </header>
 
-<div class="section-title">
-    <span>Interaktive Weltkarte</span>
-    <button class="reset-map-btn" onclick="resetMap()">🗺️ Übersicht</button>
+<div class="legend">
+    <div class="legend-item"><span class="dot fruh"></span> Frühschicht</div>
+    <div class="legend-item"><span class="dot nacht"></span> Nachtschicht</div>
+    <div class="legend-item"><span class="dot spat"></span> Spätschicht</div>
+    <div class="legend-item"><span class="dot frei"></span> Wochenende (Frei)</div>
 </div>
 
-<div class="map-container" id="mapContainer">
-    <div class="map-wrapper" id="mapWrapper">
-        <img src="map.jpg" alt="Minecraft Dungeons Weltkarte" class="map-image">
-        <div class="map-pin-box" id="mapPinBox">
-            <div class="map-pin">📍</div>
-            <div class="map-pin-label" id="mapPinLabel">Boss Spawn</div>
-        </div>
-    </div>
+<div class="month-nav">
+    <button onclick="changeMonth(-1)">◀ Vorheriger</button>
+    <div class="month-title" id="monthTitle">Oktober 2026</div>
+    <button onclick="changeMonth(1)">Nächster ▶</button>
 </div>
 
-<div class="section-title">Loot-Datenbank (<span id="itemCount">0</span> Items)</div>
-
-<div class="controls">
-    <input type="text" id="searchInput" placeholder="Suche alle Items, Boss oder Region..." oninput="updateView()">
-    <div class="filter-row">
-        <select id="regionSelect" onchange="updateView()">
-            <option value="all">Alle Regionen</option>
-            <option value="brave_haven">Brave Haven</option>
-            <option value="honeycomb_fields">Honeycomb Fields</option>
-            <option value="howling_woods">Howling Woods</option>
-            <option value="frozen_highlands">Frozen Highlands</option>
-            <option value="rainy_plains">Rainy Plains</option>
-            <option value="squid_coast">Squid Coast</option>
-            <option value="creeper_woods">Creeper Woods</option>
-            <option value="soggy_swamp">Soggy Swamp</option>
-            <option value="pumpkin_pastures">Pumpkin Pastures</option>
-            <option value="cacti_canyon">Cacti Canyon</option>
-            <option value="redstone_mines">Redstone Mines</option>
-            <option value="fiery_forge">Fiery Forge</option>
-            <option value="desert_temple">Desert Temple</option>
-            <option value="high_block_halls">High Block Halls</option>
-            <option value="obsidian_pinnacle">Obsidian Pinnacle</option>
-            <option value="dingy_jungle">Dingy Jungle</option>
-            <option value="overgrown_temple">Overgrown Temple</option>
-            <option value="lower_temple">Lower Temple</option>
-        </select>
-        <select id="categorySelect" onchange="updateView()">
-            <option value="all">Alle Typen</option>
-            <option value="Nahkampf">Nahkampf</option>
-            <option value="Fernkampf">Fernkampf</option>
-            <option value="Rüstung">Rüstung</option>
-            <option value="Artefakt">Artefakt</option>
-        </select>
-    </div>
-</div>
-
-<div class="drop-grid" id="dropList"></div>
+<div class="week-container" id="scheduleContainer"></div>
 
 <script>
-const regions = {
-    brave_haven: { name: "Brave Haven" },
-    honeycomb_fields: { name: "Honeycomb Fields" },
-    howling_woods: { name: "Howling Woods" },
-    frozen_highlands: { name: "Frozen Highlands" },
-    rainy_plains: { name: "Rainy Plains" },
-    squid_coast: { name: "Squid Coast" },
-    creeper_woods: { name: "Creeper Woods" },
-    soggy_swamp: { name: "Soggy Swamp" },
-    pumpkin_pastures: { name: "Pumpkin Pastures" },
-    cacti_canyon: { name: "Cacti Canyon" },
-    redstone_mines: { name: "Redstone Mines" },
-    fiery_forge: { name: "Fiery Forge" },
-    desert_temple: { name: "Desert Temple" },
-    high_block_halls: { name: "High Block Halls" },
-    obsidian_pinnacle: { name: "Obsidian Pinnacle" },
-    dingy_jungle: { name: "Dingy Jungle" },
-    overgrown_temple: { name: "Overgrown Temple" },
-    lower_temple: { name: "Lower Temple" }
+// Anker-Datum: Montag der Frühschicht-Woche (12.10.2026)
+const anchorDate = new Date(2026, 9, 12); // Oktober ist Monat index 9
+let currentDisplayDate = new Date(2026, 9, 1);
+
+const shiftCycle = ["fruh", "nacht", "spat"]; // 3-Wochen Rhythmus
+const shiftLabels = {
+    fruh: "Frühschicht",
+    nacht: "Nachtschicht",
+    spat: "Spätschicht",
+    frei: "Frei"
 };
 
-// ÜBER 250+ VOLLSTÄNDIGE ITEMS (NAHKAMPF, FERNKAMPF, RÜSTUNGEN, ARTEFAKTE)
-const itemsDB = [
-    // --- NAHKAMPF ---
-    { name: "Schwert", type: "Nahkampf", rarity: "common", symbol: "⚔️", region: "squid_coast", x: 12, y: 45, effect: "Standard-Nahkampfwaffe.", bestEnemy: "Dorf-Wache", dropRate: "40%" },
-    { name: "Holz-Schwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "squid_coast", x: 10, y: 46, effect: "Einfache Anfängerwaffe.", bestEnemy: "Zombi-Attrappe", dropRate: "50%" },
-    { name: "Breitschwert", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "fiery_forge", x: 70, y: 36, effect: "Verbesserte Schadenswerte.", bestEnemy: "Schmelz-Zombie", dropRate: "22%" },
-    { name: "Diamant-Schwert", type: "Nahkampf", rarity: "unique", symbol: "💎", region: "fiery_forge", x: 71, y: 35, effect: "Enormer Basisschaden.", bestEnemy: "Redstone-Monstrum", dropRate: "8%" },
-    { name: "Verwunschenes Schwert", type: "Nahkampf", rarity: "unique", symbol: "✨", region: "soggy_swamp", x: 32, y: 60, effect: "Erzeugt Schockwellen bei Kombos.", bestEnemy: "Sumpf-Boss", dropRate: "9%" },
-    { name: "Axt", type: "Nahkampf", rarity: "common", symbol: "🪓", region: "creeper_woods", x: 28, y: 42, effect: "Wuchtiger Rundumschlag.", bestEnemy: "Zombie-Anführer", dropRate: "25%" },
-    { name: "Doppelaxt", type: "Nahkampf", rarity: "rare", symbol: "🪓", region: "creeper_woods", x: 29, y: 44, effect: "360-Grad-Wirbelangriff.", bestEnemy: "Moosskelett", dropRate: "18%" },
-    { name: "Wirbelwind", type: "Nahkampf", rarity: "unique", symbol: "🌪️", region: "creeper_woods", x: 27, y: 43, effect: "Erweiterte Wirbel-Schockwellen.", bestEnemy: "Creeper-Boss", dropRate: "7%" },
-    { name: "Höllen-Axt", type: "Nahkampf", rarity: "unique", symbol: "🔥", region: "fiery_forge", x: 73, y: 37, effect: "Fügt allen Zielen Feuerschaden zu.", bestEnemy: "Lava-Golem", dropRate: "9%" },
-    { name: "Dolche", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "squid_coast", x: 12, y: 47, effect: "Schnelle Angriffe.", bestEnemy: "Holz-Attrappe", dropRate: "30%" },
-    { name: "Sumpf-Dolche", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "soggy_swamp", x: 33, y: 62, effect: "Extreme Angriffsgeschwindigkeit.", bestEnemy: "Slime-Gegner", dropRate: "25%" },
-    { name: "Meister-Dolche", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "soggy_swamp", x: 31, y: 59, effect: "Ultimative Hieb-Kombos.", bestEnemy: "Sumpf-Monstrum", dropRate: "9%" },
-    { name: "Mond-Dolche", type: "Nahkampf", rarity: "unique", symbol: "🌙", region: "howling_woods", x: 51, y: 36, effect: "Heilung bei Treffern.", bestEnemy: "Schatten-Bestie", dropRate: "10%" },
-    { name: "Sichel", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "pumpkin_pastures", x: 40, y: 37, effect: "Schnelle Schnittangriffe.", bestEnemy: "Feld-Zombie", dropRate: "35%" },
-    { name: "Sensen-Klinge", type: "Nahkampf", rarity: "unique", symbol: "✨", region: "pumpkin_pastures", x: 42, y: 35, effect: "Stiehlt Leben von Gegnern.", bestEnemy: "Evoker (Beschwörer)", dropRate: "14%" },
-    { name: "Erntehelfer-Sense", type: "Nahkampf", rarity: "common", symbol: "🌾", region: "pumpkin_pastures", x: 42, y: 36, effect: "Breiter Ernteschwung.", bestEnemy: "Vogelscheuche", dropRate: "30%" },
-    { name: "Frost-Sense", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 80, y: 28, effect: "Verlangsamt nahe Gegner.", bestEnemy: "Frost-Evoker Boss", dropRate: "14%" },
-    { name: "Katana", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "obsidian_pinnacle", x: 88, y: 30, effect: "Schnelle Schnittkombos.", bestEnemy: "Erz-Illager", dropRate: "18%" },
-    { name: "Meister-Katana", type: "Nahkampf", rarity: "unique", symbol: "⚔️", region: "obsidian_pinnacle", x: 86, y: 28, effect: "Enorme Krit-Chance.", bestEnemy: "Herz des Ender", dropRate: "7%" },
-    { name: "Glaive", type: "Nahkampf", rarity: "rare", symbol: "🔱", region: "desert_temple", x: 65, y: 60, effect: "Sehr hohe Reichweite.", bestEnemy: "Grabräuber", dropRate: "22%" },
-    { name: "Wahrheits-Glaive", type: "Nahkampf", rarity: "unique", symbol: "🔱", region: "desert_temple", x: 67, y: 62, effect: "Erhöhte Angriffsreichweite.", bestEnemy: "Hohepriester", dropRate: "11%" },
-    { name: "Grave Bane", type: "Nahkampf", rarity: "unique", symbol: "🔱", region: "desert_temple", x: 63, y: 58, effect: "Bonus gegen Untote.", bestEnemy: "Mumien-Boss", dropRate: "10%" },
-    { name: "Spitzhacke", type: "Nahkampf", rarity: "common", symbol: "⛏️", region: "redstone_mines", x: 58, y: 40, effect: "Extrem hoher Einzelschlag.", bestEnemy: "Bergmann-Zombie", dropRate: "32%" },
-    { name: "Diamant-Spitzhacke", type: "Nahkampf", rarity: "unique", symbol: "💎", region: "redstone_mines", x: 56, y: 42, effect: "Massiver Bonusschaden.", bestEnemy: "Elite-Bergmann", dropRate: "9%" },
-    { name: "Streitkolben", type: "Nahkampf", rarity: "common", symbol: "🔨", region: "pumpkin_pastures", x: 42, y: 38, effect: "Schwere Aufprallschläge.", bestEnemy: "Vindicator", dropRate: "25%" },
-    { name: "Sonnenschlag", type: "Nahkampf", rarity: "unique", symbol: "☀️", region: "cacti_canyon", x: 52, y: 54, effect: "Betäubt und verbrennt Ziele.", bestEnemy: "Sonnen-Boss", dropRate: "8%" },
-    { name: "Morgenstern", type: "Nahkampf", rarity: "rare", symbol: "🔨", region: "high_block_halls", x: 82, y: 45, effect: "Betäubungschance.", bestEnemy: "Königliche Wache", dropRate: "20%" },
-    { name: "Axt des Henkers", type: "Nahkampf", rarity: "unique", symbol: "🪓", region: "high_block_halls", x: 80, y: 43, effect: "Schockwellen bei Krits.", bestEnemy: "Royaler Hauptmann", dropRate: "12%" },
-    { name: "Großschwert", type: "Nahkampf", rarity: "common", symbol: "🗡️", region: "fiery_forge", x: 72, y: 38, effect: "Langsam, aber verheerend.", bestEnemy: "Schmiede-Wache", dropRate: "28%" },
-    { name: "Söldner-Großschwert", type: "Nahkampf", rarity: "rare", symbol: "⚔️", region: "brave_haven", x: 10, y: 38, effect: "Schwere Hiebe mit hoher Reichweite.", bestEnemy: "Hafen-Kapitän Mini-Boss", dropRate: "22%" },
-    { name: "Anker", type: "Nahkampf", rarity: "rare", symbol: "⚓", region: "brave_haven", x: 10, y: 40, effect: "Enormer Wucht-Schlag.", bestEnemy: "Kapitän Eisenbart", dropRate: "12%" },
-    { name: "Fluch-Anker", type: "Nahkampf", rarity: "unique", symbol: "⚓", region: "brave_haven", x: 10, y: 41, effect: "Erzeugt dunkle Explosionswellen.", bestEnemy: "Geister-Kapitän", dropRate: "6%" },
-    { name: "Peitsche", type: "Nahkampf", rarity: "rare", symbol: "🌿", region: "dingy_jungle", x: 45, y: 78, effect: "Hohe Flächenreichweite.", bestEnemy: "Dschungel-Zombie", dropRate: "22%" },
-    { name: "Ranken-Peitsche", type: "Nahkampf", rarity: "unique", symbol: "🌿", region: "dingy_jungle", x: 43, y: 76, effect: "Vergiftet Feinde.", bestEnemy: "Dschungel-Abomination", dropRate: "9%" },
-    { name: "Seelen-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "lower_temple", x: 68, y: 75, effect: "Sammelt Seelen.", bestEnemy: "Gruft-Wächter", dropRate: "21%" },
-    { name: "Geister-Messer", type: "Nahkampf", rarity: "unique", symbol: "👻", region: "lower_temple", x: 69, y: 74, effect: "Unsichtbarkeit bei Kills.", bestEnemy: "Gruft-Lord", dropRate: "10%" },
-    { name: "Honig-Messer", type: "Nahkampf", rarity: "rare", symbol: "🗡️", region: "honeycomb_fields", x: 30, y: 32, effect: "Verlangsamungseffekt bei Treffern.", bestEnemy: "Bienenkönigin", dropRate: "18%" },
-    { name: "Bienen-Stachel", type: "Nahkampf", rarity: "unique", symbol: "🗡️", region: "honeycomb_fields", x: 31, y: 35, effect: "Vergiftet Feinde sofort.", bestEnemy: "Mega-Biene", dropRate: "8%" },
-    { name: "Blitz-Speer", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 62, y: 68, effect: "Erzeugt Blitzeinschläge bei Krits.", bestEnemy: "Gewitter-Gargoyle Boss", dropRate: "11%" },
-    { name: "Donner-Axt", type: "Nahkampf", rarity: "unique", symbol: "⚡", region: "rainy_plains", x: 64, y: 67, effect: "Entfesselt Blitze bei Wirbelangriffen.", bestEnemy: "Sturm-Lord", dropRate: "7%" },
-    { name: "Gletscher-Hammer", type: "Nahkampf", rarity: "rare", symbol: "🔨", region: "frozen_highlands", x: 79, y: 27, effect: "Verursacht frostige Schockwellen.", bestEnemy: "Yeti-Boss", dropRate: "11%" },
-    { name: "Frostbiss", type: "Nahkampf", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 80, y: 31, effect: "Eiskalte Dauerschläge.", bestEnemy: "Frost-Lord", dropRate: "7%" },
+const dayNames = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-    // --- FERNKAMPF ---
-    { name: "Bogen", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "squid_coast", x: 13, y: 46, effect: "Klassischer Jagdbogen.", bestEnemy: "Übungs-Ziel", dropRate: "35%" },
-    { name: "Jagdbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "howling_woods", x: 49, y: 31, effect: "Erhöhter kritischer Trefferschaden.", bestEnemy: "Wald-Jäger Elite", dropRate: "22%" },
-    { name: "Meister-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "cacti_canyon", x: 53, y: 53, effect: "Extrem hoher Crit-Schaden.", bestEnemy: "Kaktus-Wächter", dropRate: "11%" },
-    { name: "Schwerer Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "pumpkin_pastures", x: 44, y: 35, effect: "Enormer Einzelschuss-Schaden.", bestEnemy: "Verteidiger", dropRate: "20%" },
-    { name: "Kraft-Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "pumpkin_pastures", x: 43, y: 36, effect: "Verstärkte Schüsse.", bestEnemy: "Illager-Elite", dropRate: "10%" },
-    { name: "Schnellbogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "creeper_woods", x: 30, y: 42, effect: "Erhöhte Schussfrequenz.", bestEnemy: "Elite-Creeper", dropRate: "22%" },
-    { name: "Sturmbogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "creeper_woods", x: 27, y: 39, effect: "Verschießt schnelle Salven.", bestEnemy: "Creeper-Lord", dropRate: "8%" },
-    { name: "Gekrümmter Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "squid_coast", x: 11, y: 44, effect: "Höhere Projektilgeschwindigkeit.", bestEnemy: "Dorf-Bewohner Elite", dropRate: "20%" },
-    { name: "Roter Schreckensbogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "squid_coast", x: 13, y: 43, effect: "Tempo-Boost nach Schuss.", bestEnemy: "Dorf-Boss", dropRate: "11%" },
-    { name: "Regen-Bogen", type: "Fernkampf", rarity: "common", symbol: "🌧️", region: "rainy_plains", x: 63, y: 66, effect: "Erhöhte Pfeil-Geschwindigkeit.", bestEnemy: "Sumpf-Hexe", dropRate: "26%" },
-    { name: "Wächter-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "desert_temple", x: 62, y: 60, effect: "Zielsuchende Projektile.", bestEnemy: "Pharao", dropRate: "15%" },
-    { name: "Königlicher Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "high_block_halls", x: 82, y: 47, effect: "Erhöhter Gold- und Item-Drop.", bestEnemy: "Schloss-Wache", dropRate: "18%" },
-    { name: "Ender-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "obsidian_pinnacle", x: 88, y: 31, effect: "Teleportiert nach Schuss.", bestEnemy: "Ender-Wächter", dropRate: "14%" },
-    { name: "Unheilvoller Bogen", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "obsidian_pinnacle", x: 89, y: 29, effect: "Tödliche Fernschüsse.", bestEnemy: "Herz des Ender", dropRate: "6%" },
-    { name: "Dschungel-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "dingy_jungle", x: 44, y: 77, effect: "Mehrfachschuss im Dickicht.", bestEnemy: "Dschungel-Jäger", dropRate: "20%" },
-    { name: "Pfadfinder-Bogen", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "overgrown_temple", x: 55, y: 82, effect: "Erhöhte Genauigkeit.", bestEnemy: "Tempel-Wächter", dropRate: "20%" },
-    { name: "Armbrust", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "soggy_swamp", x: 34, y: 64, effect: "Solider Bolzenwerfer.", bestEnemy: "Schlamm-Schütze", dropRate: "30%" },
-    { name: "Harfe-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "soggy_swamp", x: 34, y: 61, effect: "Schießt 5 Bolzen gleichzeitig.", bestEnemy: "Sumpf-Boss", dropRate: "10%" },
-    { name: "Verteiler-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "soggy_swamp", x: 35, y: 60, effect: "Verschießt explosive Bolzenfächer.", bestEnemy: "Hexen-König", dropRate: "7%" },
-    { name: "Prunk-Armbrust", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "pumpkin_pastures", x: 43, y: 33, effect: "Hohe Durchschlagskraft.", bestEnemy: "Elite-Vindicator", dropRate: "17%" },
-    { name: "Magma-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "fiery_forge", x: 72, y: 36, effect: "Verschießt Magma-Bolzen.", bestEnemy: "Schmiede-Boss", dropRate: "9%" },
-    { name: "Frost-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "frozen_highlands", x: 81, y: 29, effect: "Friert Ziele kurzzeitig ein.", bestEnemy: "Eis-Zombie-Anführer", dropRate: "13%" },
-    { name: "Imker-Schleuder", type: "Fernkampf", rarity: "common", symbol: "🎯", region: "honeycomb_fields", x: 31, y: 31, effect: "Verursacht Giftschaden im Umkreis.", bestEnemy: "Waben-Wächter", dropRate: "25%" },
-    { name: "Stachel-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "honeycomb_fields", x: 32, y: 33, effect: "Verschießt giftige Stacheln.", bestEnemy: "Waben-König", dropRate: "9%" },
-    { name: "Bambus-Armbrust", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "dingy_jungle", x: 47, y: 78, effect: "Sehr hohe Feuerrate.", bestEnemy: "Gift-Bogenschütze", dropRate: "28%" },
-    { name: "Vergeltungs-Armbrust", type: "Fernkampf", rarity: "unique", symbol: "🏹", region: "obsidian_pinnacle", x: 87, y: 29, effect: "Doppelte Projektile.", bestEnemy: "Letzter Boss", dropRate: "8%" },
-    { name: "Seelen-Armbrust", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "lower_temple", x: 69, y: 76, effect: "Gegnerseelen explodieren.", bestEnemy: "Unterwelt-Skelett", dropRate: "17%" },
-    { name: "Matrosen-Bogen", type: "Fernkampf", rarity: "common", symbol: "🏹", region: "brave_haven", x: 11, y: 37, effect: "Schnelle Schussfolge.", bestEnemy: "Hafen-Wache", dropRate: "30%" },
-    { name: "Piraten-Armbrust", type: "Fernkampf", rarity: "rare", symbol: "🏹", region: "brave_haven", x: 11, y: 39, effect: "Mehrfachschuss.", bestEnemy: "Kanonier", dropRate: "19%" },
+function getShiftForDate(date) {
+    const dayOfWeek = (date.getDay() + 6) % 7; // 0 = Montag, ..., 6 = Sonntag
+    if (dayOfWeek >= 5) {
+        return "frei"; // Samstag und Sonntag frei
+    }
 
-    // --- RÜSTUNGEN ---
-    { name: "Jäger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "creeper_woods", x: 29, y: 43, effect: "+30% Fernkampfschaden.", bestEnemy: "Skelett-Schütze", dropRate: "20%" },
-    { name: "Bogenschnell-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🛡️", region: "creeper_woods", x: 30, y: 44, effect: "Extremer Fernkampf-Bonus.", bestEnemy: "Elite-Skelett", dropRate: "9%" },
-    { name: "Verteidiger-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "creeper_woods", x: 27, y: 41, effect: "+15% Nahkampf-Tempo.", bestEnemy: "Moosskelett", dropRate: "18%" },
-    { name: "Helden-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🛡️", region: "creeper_woods", x: 28, y: 39, effect: "Team-Heilung & Schadensreduktion.", bestEnemy: "Creeper-König", dropRate: "7%" },
-    { name: "Ritter-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "pumpkin_pastures", x: 43, y: 33, effect: "-20% erlittener Schaden.", bestEnemy: "Kürbis-Ritter", dropRate: "22%" },
-    { name: "Champion-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🛡️", region: "pumpkin_pastures", x: 42, y: 34, effect: "+40% Nahkampfschaden für Team.", bestEnemy: "Erz-Beschwörer", dropRate: "8%" },
-    { name: "Söldner-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "cacti_canyon", x: 51, y: 56, effect: "+35% Waffenschaden.", bestEnemy: "Geister-Wächter", dropRate: "19%" },
-    { name: "Wolfs-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🐺", region: "howling_woods", x: 50, y: 33, effect: "+20% Waffen-Schadens-Aura.", bestEnemy: "Höhlen-Alptraum Wolf", dropRate: "15%" },
-    { name: "Fuchs-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🦊", region: "howling_woods", x: 49, y: 36, effect: "+10% Ausweichchance & Tempo.", bestEnemy: "Fuchs-Boss", dropRate: "11%" },
-    { name: "Schnee-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🧊", region: "frozen_highlands", x: 82, y: 26, effect: "Schutz vor Frost und Verlangsamung.", bestEnemy: "Gletscher-Golem", dropRate: "17%" },
-    { name: "Frost-Rüstung", type: "Rüstung", rarity: "unique", symbol: "❄️", region: "frozen_highlands", x: 81, y: 27, effect: "Aura verlangsamt Angreifer.", bestEnemy: "Yeti", dropRate: "8%" },
-    { name: "Sturm-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌪️", region: "rainy_plains", x: 61, y: 69, effect: "Erhöht Zauber-Geschwindigkeit.", bestEnemy: "Wolkenschreck Mini-Boss", dropRate: "12%" },
-    { name: "Seelen-Roben", type: "Rüstung", rarity: "rare", symbol: "🧙‍♂️", region: "soggy_swamp", x: 31, y: 61, effect: "+50% Seelen-Aufnahme.", bestEnemy: "Seelen-Skelett", dropRate: "16%" },
-    { name: "Toter-Glaube-Roben", type: "Rüstung", rarity: "unique", symbol: "👻", region: "soggy_swamp", x: 30, y: 62, effect: "Verstärkt Artefakte massiv.", bestEnemy: "Sumpf-Geist", dropRate: "9%" },
-    { name: "Diebes-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🥷", region: "redstone_mines", x: 57, y: 43, effect: "+25% Bewegungstempo.", bestEnemy: "Dieb-Illager", dropRate: "20%" },
-    { name: "Spinnen-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🕷️", region: "redstone_mines", x: 56, y: 44, effect: "Tempo-Buff & Lebensraub.", bestEnemy: "Spinnen-Boss", dropRate: "10%" },
-    { name: "Verstärkte Rüstung", type: "Rüstung", rarity: "rare", symbol: "🛡️", region: "fiery_forge", x: 73, y: 39, effect: "35% Schadensreduktion.", bestEnemy: "Redstone-Monstrum", dropRate: "15%" },
-    { name: "Geschmolzene Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌋", region: "fiery_forge", x: 71, y: 37, effect: "Fügt Feuerschaden zu.", bestEnemy: "Lava-Golem Boss", dropRate: "10%" },
-    { name: "Grimm-Rüstung", type: "Rüstung", rarity: "rare", symbol: "💀", region: "desert_temple", x: 66, y: 61, effect: "Lebensraub-Aura.", bestEnemy: "Skelett-Magier", dropRate: "17%" },
-    { name: "Wohlstands-Rüstung", type: "Rüstung", rarity: "unique", symbol: "💰", region: "desert_temple", x: 65, y: 59, effect: "+100% Emerald-Fundrate.", bestEnemy: "Grabräuber-Boss", dropRate: "8%" },
-    { name: "Prunkvolle Rüstung", type: "Rüstung", rarity: "unique", symbol: "👑", region: "high_block_halls", x: 83, y: 46, effect: "+50% Emerald-Fundrate.", bestEnemy: "Schloss-Boss", dropRate: "9%" },
-    { name: "Königlicher Umhang", type: "Rüstung", rarity: "rare", symbol: "🧥", region: "high_block_halls", x: 82, y: 42, effect: "+20% Gesundheits-Boost.", bestEnemy: "Schloss-Wache", dropRate: "18%" },
-    { name: "Dunkle Rüstung", type: "Rüstung", rarity: "unique", symbol: "🖤", region: "obsidian_pinnacle", x: 89, y: 32, effect: "+30% Nahkampfschaden.", bestEnemy: "Ender-Wache", dropRate: "10%" },
-    { name: "Ozelot-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐱", region: "dingy_jungle", x: 46, y: 79, effect: "+10% Ausweichchance.", bestEnemy: "Dschungel-Späher", dropRate: "18%" },
-    { name: "Schatten-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌑", region: "dingy_jungle", x: 45, y: 77, effect: "Längere Unsichtbarkeit.", bestEnemy: "Dschungel-Schatten", dropRate: "8%" },
-    { name: "Ranken-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🍃", region: "overgrown_temple", x: 53, y: 80, effect: "Regeneriert Leben.", bestEnemy: "Gift-Boss", dropRate: "11%" },
-    { name: "Gruft-Rüstung", type: "Rüstung", rarity: "rare", symbol: "🪦", region: "lower_temple", x: 67, y: 76, effect: "+20% Seelen-Verstärkung.", bestEnemy: "Mumien-Wache", dropRate: "17%" },
-    { name: "Seeräuber-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🏴‍☠️", region: "brave_haven", x: 9, y: 39, effect: "+20% Angriffsgeschwindigkeit.", bestEnemy: "Elite Piraten-Skelett", dropRate: "14%" },
-    { name: "Bienen-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🐝", region: "honeycomb_fields", x: 29, y: 34, effect: "Beschwört Bienen bei Schaden.", bestEnemy: "Mini-Boss: Bienenwabe", dropRate: "12%" },
-    { name: "Kaktus-Rüstung", type: "Rüstung", rarity: "unique", symbol: "🌵", region: "cacti_canyon", x: 52, y: 58, effect: "Reflektiert Nahkampf-Schaden.", bestEnemy: "Kaktus-Boss", dropRate: "10%" },
-    { name: "Creeper-Rüstung", type: "Rüstung", rarity: "unique", symbol: "💥", region: "creeper_woods", x: 26, y: 43, effect: "Explodiert bei Feindkontakt.", bestEnemy: "Creeper-Elite", dropRate: "9%" },
-    { name: "Pharao-Rüstung", type: "Rüstung", rarity: "unique", symbol: "👑", region: "desert_temple", x: 65, y: 63, effect: "Erhöht Artefakt-Tempo.", bestEnemy: "Pharao-Boss", dropRate: "8%" },
-
-    // --- ARTEFAKTE ---
-    { name: "Feuerwerk-Pfeil", type: "Artefakt", rarity: "common", symbol: "🎆", region: "creeper_woods", x: 26, y: 40, effect: "Explodierender Spezialpfeil.", bestEnemy: "Creeper-Boss", dropRate: "30%" },
-    { name: "Geister-Fläschchen", type: "Artefakt", rarity: "rare", symbol: "👻", region: "creeper_woods", x: 28, y: 45, effect: "Macht kurzzeitig unsichtbar.", bestEnemy: "Illager-Späher", dropRate: "15%" },
-    { name: "Wind-Horn", type: "Artefakt", rarity: "common", symbol: "📯", region: "pumpkin_pastures", x: 41, y: 36, effect: "Stösst Gegner zurück.", bestEnemy: "Illager-Hauptmann", dropRate: "28%" },
-    { name: "Totem der Regeneration", type: "Artefakt", rarity: "rare", symbol: "💚", region: "cacti_canyon", x: 54, y: 55, effect: "Heilungszone für Team.", bestEnemy: "Magie-Golem", dropRate: "16%" },
-    { name: "Redstone-Golem-Amulett", type: "Artefakt", rarity: "unique", symbol: "🗿", region: "redstone_mines", x: 57, y: 41, effect: "Beschwört Golem-Helfer.", bestEnemy: "Redstone-Golem", dropRate: "12%" },
-    { name: "Dynamit-Kiste", type: "Artefakt", rarity: "common", symbol: "🧨", region: "redstone_mines", x: 60, y: 38, effect: "Wirft scharfe TNT-Fässer.", bestEnemy: "Pyromane", dropRate: "24%" },
-    { name: "Eis-Zauberstab", type: "Artefakt", rarity: "rare", symbol: "❄️", region: "fiery_forge", x: 74, y: 40, effect: "Friert Gegner ein.", bestEnemy: "Magma-Schleim", dropRate: "14%" },
-    { name: "Leuchtfeuer", type: "Artefakt", rarity: "rare", symbol: "🔆", region: "desert_temple", x: 64, y: 59, effect: "Todesstrahl.", bestEnemy: "Tempel-Wächter", dropRate: "13%" },
-    { name: "Liebes-Medikament", type: "Artefakt", rarity: "rare", symbol: "💖", region: "high_block_halls", x: 81, y: 44, effect: "Bekehrt Feinde.", bestEnemy: "Hofmagier", dropRate: "15%" },
-    { name: "Ender-Anhänger", type: "Artefakt", rarity: "unique", symbol: "🔮", region: "obsidian_pinnacle", x: 88, y: 32, effect: "Teleportiert den Spieler.", bestEnemy: "Ender-Magier", dropRate: "9%" },
-    { name: "Geister-Pfeife", type: "Artefakt", rarity: "rare", symbol: "📯", region: "howling_woods", x: 48, y: 34, effect: "Beschwört Seelenwölfe.", bestEnemy: "Alpha-Wolf", dropRate: "15%" },
-    { name: "Gewitter-Guthaben", type: "Artefakt", rarity: "rare", symbol: "🌩️", region: "rainy_plains", x: 60, y: 71, effect: "Ruft Blitze auf mehrere Gegner.", bestEnemy: "Sturm-Beschwörer", dropRate: "19%" },
-    { name: "Honig-Amulett", type: "Artefakt", rarity: "rare", symbol: "🍯", region: "honeycomb_fields", x: 30, y: 30, effect: "Heilt Verbündete und verlangsamt.", bestEnemy: "Riesen-Drohne", dropRate: "20%" },
-    { name: "Gift-Amulett", type: "Artefakt", rarity: "rare", symbol: "✨", region: "soggy_swamp", x: 30, y: 63, effect: "Hüllt den Spieler in Giftwolken.", bestEnemy: "Hexenmeister", dropRate: "18%" },
-    { name: "Steintrommel", type: "Artefakt", rarity: "rare", symbol: "🪘", region: "overgrown_temple", x: 54, y: 81, effect: "Erschüttert Feinde.", bestEnemy: "Tempel-Goliath", dropRate: "13%" },
-    { name: "Verfluchtes Buch", type: "Artefakt", rarity: "rare", symbol: "📖", region: "lower_temple", x: 66, y: 73, effect: "Verflucht Feinde.", bestEnemy: "Gruft-Lord", dropRate: "14%" },
-    { name: "Feuerblitz", type: "Artefakt", rarity: "rare", symbol: "🔥", region: "cacti_canyon", x: 53, y: 53, effect: "Verschießt brennende Projektile.", bestEnemy: "Sonnen-Pyromane", dropRate: "14%" },
-    { name: "Höllen-Feuer", type: "Artefakt", rarity: "rare", symbol: "🔥", region: "fiery_forge", x: 73, y: 36, effect: "Entfacht einen Feuerring.", bestEnemy: "Schmiede-Boss", dropRate: "13%" },
-    { name: "Prunk-Schild", type: "Artefakt", rarity: "rare", symbol: "🛡️", region: "high_block_halls", x: 81, y: 42, effect: "Blockt jeglichen Frontalschaden.", bestEnemy: "Royal-Guard Elite", dropRate: "14%" },
-    { name: "Sturm-Amulett", type: "Artefakt", rarity: "rare", symbol: "⚡", region: "rainy_plains", x: 60, y: 67, effect: "Elektrisiert nahe Ziele.", bestEnemy: "Sturm-Geist", dropRate: "14%" }
-];
-
-function focusTarget(xVal, yVal, enemyName) {
-    const wrapper = document.getElementById('mapWrapper');
-    const pinBox = document.getElementById('mapPinBox');
-    const label = document.getElementById('mapPinLabel');
+    // Differenz in Tagen zum Anker-Montag berechnen
+    const diffTime = date.getTime() - anchorDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
     
-    pinBox.style.left = xVal + '%';
-    pinBox.style.top = yVal + '%';
-    pinBox.style.display = 'block';
-    label.innerText = enemyName || "Gegner Spawn";
+    // Wochen-Differenz berechnen
+    const diffWeeks = Math.floor(diffDays / 7);
+    
+    // Zyklus-Index berechnen (Modulo für positive/negative Wochen)
+    let cycleIndex = diffWeeks % 3;
+    if (cycleIndex < 0) cycleIndex += 3;
 
-    wrapper.style.transform = `scale(3.4) translate(calc(50% - ${xVal}%), calc(50% - ${yVal}%))`;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return shiftCycle[cycleIndex];
 }
 
-function resetMap() {
-    const wrapper = document.getElementById('mapWrapper');
-    const pinBox = document.getElementById('mapPinBox');
-    pinBox.style.display = 'none';
-    wrapper.style.transform = 'scale(1) translate(0px, 0px)';
-}
+function renderSchedule() {
+    const container = document.getElementById("scheduleContainer");
+    container.innerHTML = "";
 
-function updateView() {
-    const selectedRegion = document.getElementById('regionSelect').value;
-    const selectedCategory = document.getElementById('categorySelect').value;
-    const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-    
-    const dropContainer = document.getElementById('dropList');
-    dropContainer.innerHTML = '';
+    const year = currentDisplayDate.getFullYear();
+    const month = currentDisplayDate.getMonth();
 
-    const filtered = itemsDB.filter(item => {
-        const matchesRegion = (selectedRegion === 'all' || item.region === selectedRegion);
-        const matchesCategory = (selectedCategory === 'all' || item.type === selectedCategory);
-        const matchesSearch = item.name.toLowerCase().includes(searchFilter) || 
-                              item.effect.toLowerCase().includes(searchFilter) ||
-                              item.bestEnemy.toLowerCase().includes(searchFilter) ||
-                              item.region.toLowerCase().includes(searchFilter);
+    document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
 
-        return matchesRegion && matchesCategory && matchesSearch;
-    });
+    // Erster Tag des Monats
+    let firstDay = new Date(year, month, 1);
+    // Erster Montag der Kalenderansicht
+    let startDay = new Date(firstDay);
+    let dayOffset = (startDay.getDay() + 6) % 7;
+    startDay.setDate(startDay.getDate() - dayOffset);
 
-    document.getElementById('itemCount').innerText = filtered.length;
+    // Letzter Tag des Monats
+    let lastDay = new Date(year, month + 1, 0);
 
-    filtered.forEach(item => {
-        const card = document.createElement('div');
-        card.className = `item-card ${item.rarity}`;
-        let rarityText = item.rarity === 'unique' ? 'Einzigartig' : (item.rarity === 'rare' ? 'Selten' : 'Gewöhnlich');
-        const regionName = regions[item.region] ? regions[item.region].name : item.region;
+    let runner = new Date(startDay);
+    const today = new Date();
 
-        card.onclick = () => focusTarget(item.x, item.y, item.bestEnemy);
+    while (runner <= lastDay || (runner.getDay() + 6) % 7 !== 0) {
+        const weekCard = document.createElement("div");
+        weekCard.className = "week-card";
 
-        card.innerHTML = `
-            <div class="item-icon-box">${item.symbol}</div>
-            <div class="item-details-box">
-                <div class="item-row">
-                    <span class="item-name ${item.rarity}">${item.name}</span>
-                    <span class="rarity-tag tag-${item.rarity}">${rarityText}</span>
+        // KW ermitteln
+        const weekNum = getWeekNumber(runner);
+        
+        let daysHtml = "";
+        for (let i = 0; i < 7; i++) {
+            const shift = getShiftForDate(runner);
+            const isToday = runner.toDateString() === today.toDateString();
+            const dateNum = runner.getDate().toString().padStart(2, '0');
+            const monthNum = (runner.getMonth() + 1).toString().padStart(2, '0');
+
+            daysHtml += `
+                <div class="day-box ${isToday ? 'today' : ''}">
+                    <div class="day-header">
+                        <span class="day-name">${dayNames[i]}</span>
+                        <span class="day-date">${dateNum}.${monthNum}.</span>
+                    </div>
+                    <div class="shift-badge shift-${shift}">${shiftLabels[shift]}</div>
                 </div>
-                <div class="item-info"><strong>Typ:</strong> ${item.type} | <strong>Region:</strong> ${regionName}</div>
-                <div class="item-effect">${item.effect}</div>
-                <div class="boss-info-box">
-                    <span>👾 Gegner: <span class="boss-name">${item.bestEnemy}</span></span>
-                    <span class="drop-rate">🎯 ${item.dropRate}</span>
-                </div>
-                <div class="location-badge">📍 Exakte Nadel anzeigen</div>
+            `;
+            runner.setDate(runner.getDate() + 1);
+        }
+
+        weekCard.innerHTML = `
+            <div class="week-header">
+                <span>Kalenderwoche ${weekNum}</span>
             </div>
+            <div class="days-grid">${daysHtml}</div>
         `;
-        dropContainer.appendChild(card);
-    });
+
+        container.appendChild(weekCard);
+    }
 }
 
-updateView();
+function changeMonth(delta) {
+    currentDisplayDate.setMonth(currentDisplayDate.getMonth() + delta);
+    renderSchedule();
+}
+
+function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+    return weekNo;
+}
+
+renderSchedule();
 </script>
 
 </body>
