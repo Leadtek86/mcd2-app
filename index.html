@@ -13,7 +13,6 @@
 
         body {
             background-color: #0c0d10;
-            /* Dunkle strukturierte Papier-Optik & Roter Glut-Effekt unten */
             background-image: 
                 radial-gradient(circle at 50% 0%, rgba(30, 32, 40, 0.6) 0%, transparent 70%),
                 linear-gradient(to top, rgba(180, 25, 0, 0.8) 0%, rgba(100, 10, 0, 0.3) 15%, transparent 40%),
@@ -27,7 +26,6 @@
             padding: 10px;
         }
 
-        /* Der große äußere weiße Rahmen */
         .app-container {
             width: 100%;
             max-width: 480px;
@@ -41,7 +39,6 @@
             overflow: hidden;
         }
 
-        /* Header Steuerung (Monat wechseln, Sync Info) */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -86,7 +83,6 @@
             text-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
 
-        /* Status & Cloud Info Box */
         .status-banner {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -99,7 +95,6 @@
         }
         .status-banner span { color: #ff4d4d; font-weight: bold; }
 
-        /* Aktionen (Zurücksetzen / Sync) */
         .action-buttons {
             display: flex;
             gap: 8px;
@@ -119,7 +114,6 @@
         }
         .btn.danger { color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3); }
 
-        /* Kalender Raster (Exakter Vorlagen-Look) */
         .calendar-card {
             border: 1.5px solid rgba(255, 255, 255, 0.8);
             border-radius: 14px;
@@ -152,7 +146,7 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 8px;
             padding: 4px 2px;
-            min-height: 54px;
+            min-height: 64px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -179,7 +173,7 @@
         .shift-badge {
             width: 100%;
             border-radius: 5px;
-            padding: 2px 1px;
+            padding: 3px 1px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -187,24 +181,23 @@
         }
 
         .shift-name {
-            font-size: 0.5rem;
+            font-size: 0.52rem;
             font-weight: 800;
             text-transform: uppercase;
         }
 
         .shift-time {
-            font-size: 0.45srem;
-            font-size: 4px;
-            opacity: 0.8;
-            display: none; /* Clean look wie auf Vorlage */
+            font-size: 0.44rem;
+            opacity: 0.9;
+            font-weight: 500;
         }
 
-        /* Schicht-Farben passend zum edlen Dark-Style */
+        /* Schicht-Farben inklusive grünes Frei & Urlaub */
         .s-fruh { background: #112a46; color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.3); }
         .s-nacht { background: #231238; color: #bc8cff; border: 1px solid rgba(188, 140, 255, 0.3); }
         .s-mittags { background: #381f0d; color: #ffa657; border: 1px solid rgba(255, 166, 87, 0.3); }
-        .s-frei { background: #0d2215; color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.3); }
-        .s-urlaub { background: #3b1111; color: #ff7b72; border: 1px solid rgba(255, 123, 114, 0.5); font-weight: 900; }
+        .s-frei { background: #0d2e1c; color: #56d364; border: 1px solid rgba(46, 160, 67, 0.4); }
+        .s-urlaub { background: #0e4429; color: #7ee787; border: 1px solid rgba(63, 185, 80, 0.6); font-weight: 900; }
     </style>
 </head>
 <body>
@@ -246,11 +239,11 @@
     const shiftCycle = ["fruh", "nacht", "mittags"];
     
     const shiftData = {
-        fruh: { name: "Früh", class: "s-fruh" },
-        nacht: { name: "Nacht", class: "s-nacht" },
-        mittags: { name: "Mittags", class: "s-mittags" },
-        frei: { name: "Frei", class: "s-frei" },
-        urlaub: { name: "URLAUB", class: "s-urlaub" }
+        fruh: { name: "Früh", time: "05:55–14:00", class: "s-fruh" },
+        nacht: { name: "Nacht", time: "21:55–06:00", class: "s-nacht" },
+        mittags: { name: "Mittags", time: "13:55–22:00", class: "s-mittags" },
+        frei: { name: "Frei", time: "Frei", class: "s-frei" },
+        urlaub: { name: "URLAUB", time: "Frei", class: "s-urlaub" }
     };
 
     const monthNamesGerman = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
@@ -366,6 +359,7 @@
                 <div class="day-number">${runner.getDate()}</div>
                 <div class="shift-badge ${shift.class}">
                     <div class="shift-name">${shift.name}</div>
+                    <div class="shift-time">${shift.time}</div>
                 </div>
             `;
 
