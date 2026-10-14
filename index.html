@@ -27,7 +27,7 @@
             padding: 12px;
         }
 
-        /* Dynamischer Zoom-Container (wird über den Regler gesteuert) */
+        /* Dynamischer Zoom-Container */
         .zoom-wrapper {
             width: 100%;
             display: flex;
@@ -147,15 +147,17 @@
         }
         .btn.danger { color: #ff7b72; border-color: rgba(255, 123, 114, 0.3); }
         
-        /* Neuer roter Jozef-Urlaub Button */
+        /* Roter Jozef-Button */
         .btn.jozef-btn {
             background: rgba(211, 47, 47, 0.85);
             color: #ffffff;
-            border: 1px solid rgba(255, 82, 82, 0.5);
+            border: 1px solid rgba(255, 82, 82, 0.6);
             font-weight: 700;
         }
-        .btn.jozef-btn:hover {
-            background: rgba(239, 83, 80, 0.95);
+        .btn.jozef-btn.active {
+            background: #d32f2f;
+            box-shadow: 0 0 10px rgba(211, 47, 47, 0.8);
+            border-color: #ffffff;
         }
 
         .calendar-card {
@@ -262,6 +264,15 @@
         .s-mittags { background: rgba(56, 31, 13, 0.85); color: #ffa657; border: 1px solid rgba(255, 166, 87, 0.35); }
         .s-frei { background: rgba(13, 46, 28, 0.85); color: #56d364; border: 1px solid rgba(46, 160, 67, 0.45); }
         .s-urlaub { background: rgba(14, 68, 41, 0.9); color: #7ee787; border: 1px solid rgba(63, 185, 80, 0.7); font-weight: 900; }
+        
+        /* Roter Jozef-Urlaub Badge im Kalender */
+        .s-jozef-urlaub { 
+            background: rgba(180, 20, 20, 0.9); 
+            color: #ffffff; 
+            border: 1px solid rgba(255, 85, 85, 0.8); 
+            font-weight: 900; 
+            box-shadow: inset 0 0 6px rgba(255,0,0,0.5);
+        }
     </style>
 </head>
 <body>
@@ -289,8 +300,8 @@
         </div>
 
         <div class="action-buttons">
-            <button class="btn" onclick="fetchCloudData()">🔄 Live-Sync laden</button>
-            <button class="btn jozef-btn" onclick="setJozefMode()">🔴 Jozef Urlaub</button>
+            <button class="btn" onclick="fetchCloudData()">🔄 Live-Sync</button>
+            <button class="btn jozef-btn" id="jozefBtn" onclick="toggleJozefMode()">🔴 Jozef Urlaub</button>
             <button class="btn danger" onclick="resetVacation()">🗑️ Alles löschen</button>
         </div>
 
@@ -317,12 +328,14 @@
         nacht: { name: "Nacht", time: "21:55–06:00", class: "s-nacht" },
         mittags: { name: "Mittags", time: "13:55–22:00", class: "s-mittags" },
         frei: { name: "Frei", time: "Frei", class: "s-frei" },
-        urlaub: { name: "URLAUB", time: "Frei", class: "s-urlaub" }
+        urlaub: { name: "URLAUB", time: "Frei", class: "s-urlaub" },
+        jozef_urlaub: { name: "JOZEF URLAUB", time: "Frei", class: "s-jozef-urlaub" }
     };
 
     const monthNamesGerman = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-    // Skalierungs-Logik mit Speicherung im Browser
+    let isJozefMode = false;
+
     function updateScale(val) {
         document.documentElement.style.setProperty('--app-scale', val);
         document.getElementById('scaleValue').innerText = Math.round(val * 100) + '%';
@@ -337,8 +350,19 @@
         }
     });
 
-    function setJozefMode() {
-        setInfo("🔴 <span>Jozef Urlaub:</span> Tippe Start- und Enddatum im Kalender an!");
+    function toggleJozefMode() {
+        isJozefMode = !isJozefMode;
+        selectionStart = null;
+        const btn = document.getElementById("jozefBtn");
+        
+        if (isJozefMode) {
+            btn.classList.add("active");
+            setInfo("🔴 <span>JOZEF MODUS:</span> Wählen Sie Start- und Enddatum für Jozefs Urlaub!");
+        } else {
+            btn.classList.remove("active");
+            setInfo("💡 <span>Normaler Urlaub:</span> Wählen Sie Start- und Enddatum.");
+        }
+        renderCalendar();
     }
 
     function getEasterDate(year) {
@@ -453,7 +477,13 @@
 
     function getShiftForDate(date) {
         const dateString = date.toISOString().split('T')[0];
-        if (vacationDays.includes(dateString)) return "urlaub";
+        
+        if (vacationDays.includes(`jozef:${dateString}`)) {
+            return "jozef_urlaub";
+        }
+        if (vacationDays.includes(dateString)) {
+            return "urlaub";
+        }
         return getCalculatedShift(date);
     }
 
@@ -513,7 +543,18 @@
     }
 
     async function handleDateClick(dateStr) {
-        if (vacationDays.includes(dateStr)) {
+        const jozefKey = `jozef:${dateStr}`;
+
+        // Löschen wenn angeklickt
+        if (isJozefMode && vacationDays.includes(jozefKey)) {
+            vacationDays = vacationDays.filter(d => d !== jozefKey);
+            selectionStart = null;
+            setInfo("⏳ Lösche Jozef Urlaub...");
+            renderCalendar();
+            await saveCloudData();
+            renderCalendar();
+            return;
+        } else if (!isJozefMode && vacationDays.includes(dateStr)) {
             vacationDays = vacationDays.filter(d => d !== dateStr);
             selectionStart = null;
             setInfo("⏳ Lösche Urlaub...");
@@ -523,9 +564,11 @@
             return;
         }
 
+        // Hinzufügen (Start & Enddatum)
         if (!selectionStart) {
             selectionStart = dateStr;
-            setInfo(`💡 Start: ${dateStr} – Wähle Enddatum!`);
+            const prefix = isJozefMode ? "🔴 Jozef Start" : "💡 Start";
+            setInfo(`${prefix}: ${dateStr} – Wähle Enddatum!`);
             renderCalendar();
         } else {
             let start = new Date(selectionStart);
@@ -540,14 +583,16 @@
             let curr = new Date(start);
             while (curr <= end) {
                 const dStr = curr.toISOString().split('T')[0];
-                if (!vacationDays.includes(dStr)) {
-                    vacationDays.push(dStr);
+                const key = isJozefMode ? `jozef:${dStr}` : dStr;
+                
+                if (!vacationDays.includes(key)) {
+                    vacationDays.push(key);
                 }
                 curr.setDate(curr.getDate() + 1);
             }
 
             selectionStart = null;
-            setInfo("⏳ Speichere Urlaub...");
+            setInfo(isJozefMode ? "🔴 Speichere Jozef Urlaub..." : "⏳ Speichere Urlaub...");
             renderCalendar();
 
             await saveCloudData();
@@ -561,7 +606,7 @@
     }
 
     async function resetVacation() {
-        if (confirm("Wirklich alle Urlaubstage zurücksetzen?")) {
+        if (confirm("Wirklich alle Urlaubstage (auch Jozefs) zurücksetzen?")) {
             vacationDays = [];
             setInfo("⏳ Setze zurück...");
             renderCalendar();
