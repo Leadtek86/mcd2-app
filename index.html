@@ -265,13 +265,23 @@
         .s-frei { background: rgba(13, 46, 28, 0.85); color: #56d364; border: 1px solid rgba(46, 160, 67, 0.45); }
         .s-urlaub { background: rgba(14, 68, 41, 0.9); color: #7ee787; border: 1px solid rgba(63, 185, 80, 0.7); font-weight: 900; }
         
-        /* Roter Jozef-Urlaub Badge im Kalender */
-        .s-jozef-urlaub { 
-            background: rgba(180, 20, 20, 0.9); 
-            color: #ffffff; 
-            border: 1px solid rgba(255, 85, 85, 0.8); 
-            font-weight: 900; 
-            box-shadow: inset 0 0 6px rgba(255,0,0,0.5);
+        /* Kombinierter Jozef-Urlaub Badge (Roter Balken oben, Schicht darunter) */
+        .jozef-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .jozef-tag-badge {
+            background: rgba(180, 20, 20, 0.95);
+            color: #ffffff;
+            border: 1px solid rgba(255, 85, 85, 0.8);
+            border-radius: 3px;
+            padding: 1px;
+            text-align: center;
+            font-size: 0.42rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -328,8 +338,7 @@
         nacht: { name: "Nacht", time: "21:55–06:00", class: "s-nacht" },
         mittags: { name: "Mittags", time: "13:55–22:00", class: "s-mittags" },
         frei: { name: "Frei", time: "Frei", class: "s-frei" },
-        urlaub: { name: "URLAUB", time: "Frei", class: "s-urlaub" },
-        jozef_urlaub: { name: "JOZEF URLAUB", time: "Frei", class: "s-jozef-urlaub" }
+        urlaub: { name: "URLAUB", time: "Frei", class: "s-urlaub" }
     };
 
     const monthNamesGerman = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
@@ -357,10 +366,10 @@
         
         if (isJozefMode) {
             btn.classList.add("active");
-            setInfo("🔴 <span>JOZEF MODUS:</span> Wählen Sie Start- und Enddatum für Jozefs Urlaub!");
+            setInfo("🔴 <span>JOZEF MODUS:</span> Tippe Start- und Enddatum für Jozefs Urlaub an!");
         } else {
             btn.classList.remove("active");
-            setInfo("💡 <span>Normaler Urlaub:</span> Wählen Sie Start- und Enddatum.");
+            setInfo("💡 <span>Normaler Urlaub:</span> Tippe Start- und Enddatum an.");
         }
         renderCalendar();
     }
@@ -475,18 +484,6 @@
         return shiftCycle[cycleIndex];
     }
 
-    function getShiftForDate(date) {
-        const dateString = date.toISOString().split('T')[0];
-        
-        if (vacationDays.includes(`jozef:${dateString}`)) {
-            return "jozef_urlaub";
-        }
-        if (vacationDays.includes(dateString)) {
-            return "urlaub";
-        }
-        return getCalculatedShift(date);
-    }
-
     function renderCalendar() {
         const grid = document.getElementById("daysGrid");
         grid.innerHTML = "";
@@ -515,7 +512,14 @@
             const dateStr = runner.toISOString().split('T')[0];
             const holidayName = holidaysNRW[dateStr];
 
-            const shiftKey = getShiftForDate(runner);
+            const baseShiftKey = getCalculatedShift(runner);
+            const isJozef = vacationDays.includes(`jozef:${dateStr}`);
+            const isMyVacation = vacationDays.includes(dateStr);
+
+            let shiftKey = baseShiftKey;
+            if (isMyVacation) {
+                shiftKey = "urlaub";
+            }
             const shift = shiftData[shiftKey];
 
             const cell = document.createElement("div");
@@ -526,15 +530,32 @@
 
             let holidayHtml = holidayName ? `<div class="holiday-indicator" title="${holidayName}">${holidayName}</div>` : '';
 
+            let badgeHtml = "";
+            if (isJozef) {
+                badgeHtml = `
+                    <div class="jozef-container">
+                        <div class="jozef-tag-badge">JOZEF URLAUB</div>
+                        <div class="shift-badge ${shift.class}">
+                            <div class="shift-name">${shift.name}</div>
+                            <div class="shift-time">${shift.time}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                badgeHtml = `
+                    <div class="shift-badge ${shift.class}">
+                        <div class="shift-name">${shift.name}</div>
+                        <div class="shift-time">${shift.time}</div>
+                    </div>
+                `;
+            }
+
             cell.innerHTML = `
                 <div class="day-header-row">
                     ${holidayHtml}
                     <div class="day-number">${runner.getDate()}</div>
                 </div>
-                <div class="shift-badge ${shift.class}">
-                    <div class="shift-name">${shift.name}</div>
-                    <div class="shift-time">${shift.time}</div>
-                </div>
+                ${badgeHtml}
             `;
 
             grid.appendChild(cell);
@@ -545,7 +566,7 @@
     async function handleDateClick(dateStr) {
         const jozefKey = `jozef:${dateStr}`;
 
-        // Löschen wenn angeklickt
+        // Löschen wenn bereits eingetragen
         if (isJozefMode && vacationDays.includes(jozefKey)) {
             vacationDays = vacationDays.filter(d => d !== jozefKey);
             selectionStart = null;
@@ -564,7 +585,7 @@
             return;
         }
 
-        // Hinzufügen (Start & Enddatum)
+        // Zeitraum auswählen
         if (!selectionStart) {
             selectionStart = dateStr;
             const prefix = isJozefMode ? "🔴 Jozef Start" : "💡 Start";
@@ -597,6 +618,10 @@
 
             await saveCloudData();
             renderCalendar();
+            
+            if (isJozefMode) {
+                toggleJozefMode();
+            }
         }
     }
 
@@ -606,7 +631,7 @@
     }
 
     async function resetVacation() {
-        if (confirm("Wirklich alle Urlaubstage (auch Jozefs) zurücksetzen?")) {
+        if (confirm("Wirklich alle Urlaubstage zurücksetzen?")) {
             vacationDays = [];
             setInfo("⏳ Setze zurück...");
             renderCalendar();
