@@ -146,6 +146,17 @@
             cursor: pointer;
         }
         .btn.danger { color: #ff7b72; border-color: rgba(255, 123, 114, 0.3); }
+        
+        /* Neuer roter Jozef-Urlaub Button */
+        .btn.jozef-btn {
+            background: rgba(211, 47, 47, 0.85);
+            color: #ffffff;
+            border: 1px solid rgba(255, 82, 82, 0.5);
+            font-weight: 700;
+        }
+        .btn.jozef-btn:hover {
+            background: rgba(239, 83, 80, 0.95);
+        }
 
         .calendar-card {
             border: 1.5px solid rgba(255, 255, 255, 0.75);
@@ -279,6 +290,7 @@
 
         <div class="action-buttons">
             <button class="btn" onclick="fetchCloudData()">🔄 Live-Sync laden</button>
+            <button class="btn jozef-btn" onclick="setJozefMode()">🔴 Jozef Urlaub</button>
             <button class="btn danger" onclick="resetVacation()">🗑️ Alles löschen</button>
         </div>
 
@@ -313,7 +325,6 @@
     // Skalierungs-Logik mit Speicherung im Browser
     function updateScale(val) {
         document.documentElement.style.setProperty('--app-scale', val);
-        document.getElementById('scaleValue.innerText', Math.round(val * 100) + '%');
         document.getElementById('scaleValue').innerText = Math.round(val * 100) + '%';
         localStorage.setItem('app_scale_pref', val);
     }
@@ -325,6 +336,10 @@
             updateScale(savedScale);
         }
     });
+
+    function setJozefMode() {
+        setInfo("🔴 <span>Jozef Urlaub:</span> Tippe Start- und Enddatum im Kalender an!");
+    }
 
     function getEasterDate(year) {
         const a = year % 19;
